@@ -160,7 +160,7 @@ export function exportPlannerCSV(args: {
               s.curs?.toString() ??
               String(p.curs ?? inferCursFromDate(day));
             const QUADRIMESTRE = String(
-              s.quadrimestre ?? p.quad ?? inferQuadFromDate(day)
+              p.quad ?? ""
             );
             const TIPUS_EXAMEN =
               p.tipus === "REAVALUACIÓ" ? "REAVALUACIO" : p.tipus;
