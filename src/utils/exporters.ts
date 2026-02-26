@@ -80,11 +80,6 @@ function inferCursFromDate(d: Date): string {
   return (m >= 9 ? y : y - 1).toString(); // curs = any d'inici
 }
 
-function inferQuadFromDate(d: Date): 1 | 2 {
-  const m = d.getMonth() + 1;
-  return m >= 9 || m === 1 ? 1 : 2; // set–gen: Q1; feb–jul: Q2
-}
-
 /* ---------- JSON ---------- */
 
 export function exportPlannerJSON(args: {
