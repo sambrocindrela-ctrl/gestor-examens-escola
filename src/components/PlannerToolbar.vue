@@ -124,10 +124,8 @@ function handleImportExcel(event: Event) {
   <div class="p-4 rounded-2xl border shadow-sm bg-white mb-6">
     <h2 class="font-semibold mb-3">Dades i intercanvi</h2>
 
-    <!-- Two sections: Protected and Unprotected -->
     <div class="space-y-4">
       
-      <!-- PROTECTED SECTION: Botons per afegir/editar franges-assignatures-aules -->
       <div class="border rounded-xl p-3 bg-gray-50">
         <div class="flex items-center justify-between mb-3">
           <h3 class="text-sm font-semibold text-gray-700">
@@ -197,7 +195,6 @@ function handleImportExcel(event: Event) {
             :class="isAdminMode ? 'bg-white hover:bg-gray-50' : 'bg-gray-200 cursor-not-allowed opacity-60'"
           >
             Importar calendari en Excel
-            <!-- Fixed TS1117 error -->
             <input
               type="file"
               accept=".xlsx, .xls"
@@ -227,7 +224,6 @@ function handleImportExcel(event: Event) {
         </div>
       </div>
 
-      <!-- UNPROTECTED SECTION: Botons per exportar i importar calendaris -->
       <div class="border rounded-xl p-3 bg-blue-50">
         <h3 class="text-sm font-semibold text-gray-700 mb-3">
           📋 Botons per exportar i importar calendaris
@@ -277,12 +273,6 @@ function handleImportExcel(event: Event) {
       calendari (tots períodes): <strong>{{ assignedCount }}</strong>.
     </p>
 
-    <p class="text-xs text-gray-500 mt-1">
-      Si canvies molt el CSV, pot ser recomanable reiniciar-ho tot amb
-      &nbsp;"Importar CSV (REEMPLAÇA)".
-    </p>
-
-    <!-- Banner Desfer eliminació -->
     <div v-if="lastDeleted" class="mt-3 p-2 bg-yellow-50 border border-yellow-300 rounded-xl text-xs flex items-center justify-between gap-2">
       <span>
         Assignatura eliminada del catàleg:
@@ -306,7 +296,6 @@ function handleImportExcel(event: Event) {
       </div>
     </div>
 
-    <!-- Pestanyes de períodes -->
     <div class="mt-4 flex flex-wrap items-center gap-3">
       <div class="flex flex-wrap gap-2">
         <button
@@ -322,29 +311,9 @@ function handleImportExcel(event: Event) {
         >
           {{ getPeriodLabel(p) }}
         </button>
-
-        <button
-          @click="emit('add-period')"
-          :disabled="!isAdminMode"
-          class="px-4 py-2 rounded-full border text-sm transition-colors"
-          :class="isAdminMode ? 'bg-green-50 hover:bg-green-100' : 'bg-gray-200 cursor-not-allowed opacity-60'"
-        >
-          Afegir període
-        </button>
       </div>
-
-      <button
-        v-if="periods.length > 1"
-        @click="emit('remove-period', activePid)"
-        :disabled="!isAdminMode"
-        class="px-4 py-2 rounded-full border text-sm transition-colors"
-        :class="isAdminMode ? 'bg-red-50 hover:bg-red-100' : 'bg-gray-200 cursor-not-allowed opacity-60'"
-      >
-        Eliminar període actiu
-      </button>
     </div>
 
-    <!-- Password Dialog Modal -->
     <div
       v-if="showPasswordDialog"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
