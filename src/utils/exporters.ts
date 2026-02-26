@@ -902,7 +902,7 @@ export function exportPlannerTXT(args: {
               LEN.CURS
             );
             const QUAD = padNum(
-              s.quadrimestre ?? p.quad ?? inferQuadFromDate(day),
+              p.quad ?? "",
               LEN.QUAD
             );
             const NOM = padText(s.sigles, LEN.NOM);
