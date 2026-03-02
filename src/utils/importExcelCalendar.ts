@@ -105,30 +105,30 @@ export async function importExcelCalendar(
 
 
                 // Helper to find or create subject
-                const getOrCreateSubject = (code: string, cellContent: string): string => {
-                    const existing = allSubjects.find((s) => s.codi === code);
-                    if (existing) return existing.id;
+const getOrCreateSubject = (code: string, displayName: string, italic: boolean): string => {
+  const existing = allSubjects.find((s) => s.codi === code);
+  if (existing) {
+    if (displayName && !existing.displayName) existing.displayName = displayName;
+    if (italic && existing.displayItalic !== true) existing.displayItalic = true;
+    return existing.id;
+  }
 
-                    // Simple rule: Everything BEFORE the code is the name, everything AFTER is discarded
-                    const parts = cellContent.split(code);
-                    let name = parts[0]
-                        .replace(/\r?\n/g, " ") // Replace newlines with spaces
-                        .replace(/\s+/g, " ")   // Collapse multiple spaces
-                        .trim();
+  const safeDisplay = displayName?.replace(/\s+/g, " ").trim();
 
-                    if (!name) name = `Assignatura ${code}`;
+  const newSub: Subject = {
+    id: crypto.randomUUID(),
+    codi: code,
+    sigles: `SUB_${code}`, // o code
+    curs: "1",
+    quadrimestre: 1,
+    displayName: safeDisplay || undefined,
+    displayItalic: italic || undefined,
+  };
 
-                    const newSub: Subject = {
-                        id: crypto.randomUUID(),
-                        codi: code,
-                        sigles: name, // Use name as sigles since nom doesn't exist
-                        curs: "1", // Default
-                        quadrimestre: 1, // Default
-                    };
-                    allSubjects.push(newSub);
-                    console.log(`[Import] Created subject: ${name} (${code})`);
-                    return newSub.id;
-                };
+  allSubjects.push(newSub);
+  console.log(`[Import] Created subject placeholder: ${code}`);
+  return newSub.id;
+};
 
                 // Regex for metadata row: "Period: [Tipus], Curs: [Curs], Q: [Quad]"
                 const metadataRegex = /Period(?:e)?\s*[:\s]\s*(.*?)[,;]\s*Curs\s*[:\s]\s*(.*?)[,;]\s*Q(?:uad(?:rimestre)?)?\s*[:\s]\s*(\d+)/i;
