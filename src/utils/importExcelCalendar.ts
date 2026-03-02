@@ -17,6 +17,54 @@ export interface ImportedCalendarData {
     subjects: Subject[];
 }
 
+const parseCellSubjects = (cellContent: string) => {
+  const lines = cellContent
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l);
+
+  let currentNameBuffer: string[] = [];
+  const found: { code: string; name: string }[] = [];
+
+  // Líneas que NO son nombre (aulas, students, etc.)
+  const garbageLineRegex =
+    /^(?:Aula|Aules|Classroom|Laboratory|Laboratori|Students|Matriculats|Estudiants)\b/i;
+
+  // Elimina basura dentro de una línea (p.ej. "... Classroom A101")
+  const inlineGarbageRegex =
+    /\b(?:Aula|Aules|Classroom|Laboratory|Laboratori)\b.*$/i;
+
+  for (const line of lines) {
+    const cleaned = line.replace(inlineGarbageRegex, "").trim();
+
+    // Si es línea de basura, ignórala
+    if (!cleaned || garbageLineRegex.test(cleaned)) continue;
+
+    const codeMatch = cleaned.match(/230\d{3,4}/);
+    if (codeMatch) {
+      const code = codeMatch[0];
+
+      // Todo lo que quede en esa línea, sin el código, puede formar parte del nombre
+      const withoutCode = cleaned.replace(code, "").trim();
+      if (withoutCode && !garbageLineRegex.test(withoutCode)) {
+        currentNameBuffer.push(withoutCode);
+      }
+
+      const name = currentNameBuffer.join(" ").replace(/\s+/g, " ").trim();
+      found.push({ code, name });
+
+      // reset buffer para siguiente asignatura dentro de la misma celda
+      currentNameBuffer = [];
+    } else {
+      // no hay code: es nombre (posiblemente en líneas previas al code)
+      currentNameBuffer.push(cleaned);
+    }
+  }
+
+  return found;
+};
+
+
 export async function importExcelCalendar(
     file: File,
     existingSubjects: Subject[]
