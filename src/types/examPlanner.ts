@@ -22,6 +22,8 @@ export interface Subject {
   MATT?: string;
   MEE?: string;
   MCYBERS?: string;
+  displayName?: string;
+  displayItalic?: boolean; 
 }
 
 export interface TimeSlot {
