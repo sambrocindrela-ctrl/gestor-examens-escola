@@ -78,6 +78,13 @@ export async function importExcelCalendar(
                 const workbook = XLSX.read(data, { type: "array" });
                 const sheetName = workbook.SheetNames[0];
                 const sheet = workbook.Sheets[sheetName];
+                const isCellItalic = (r: number, c: number): boolean => {
+                // rows está 0-based, XLSX refs son 1-based
+                const cellRef = XLSX.utils.encode_cell({ r, c });
+                const cell = (sheet as any)[cellRef];
+                return !!cell?.s?.font?.italic;
+                };
+
                 const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
                 // Clone existing subjects to avoid mutating prop directly until ready
