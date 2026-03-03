@@ -199,16 +199,13 @@ const getOrCreateSubject = (code: string, displayName: string, italic: boolean):
                                 const normalized = valStr.replace(/[.-]/g, "/");
                                 const parts = normalized.split("/");
                                 if (parts.length === 3) {
-                                    date = parse(normalized, "dd/MM/yyyy", new Date());
+const patterns = ["d/M/yyyy", "dd/MM/yyyy", "d/M/yy", "dd/MM/yy"];
+for (const p of patterns) {
+const d = parse(normalized, p, new Date());
+if (isValid(d)) { date = d; break; }
+}
                                 }
                             }
-
-                            if (date && isValid(date)) {
-                                validDatesInRow.push({ col: c, date });
-                            }
-                        }
-                    }
-
                     if (validDatesInRow.length >= 2) {
                         console.log(`[Import] Found Date Row with ${validDatesInRow.length} dates`);
                         currentWeekDates = new Array(row.length).fill(null);
