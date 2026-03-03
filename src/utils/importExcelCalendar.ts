@@ -285,29 +285,23 @@ const getOrCreateSubject = (code: string, displayName: string, italic: boolean):
                             const dateIso = format(date, "yyyy-MM-dd");
                             const key = `${dateIso}|${currentSlotIndex}`;
 
-                            // Split cell content by newlines to handle multiple subjects per cell
-                            const lines = cellContent.split(/\r?\n/).map((l: string) => l.trim()).filter((l: string) => l);
-                            console.log(`[Import] Cell ${c} has ${lines.length} lines`);
+// ✅ Parse subjects in this cell (nombre puede estar en líneas antes del código)
+const subjectsFound = parseCellSubjects(cellContent);
+if (!subjectsFound.length) continue;
 
-                            for (const line of lines) {
-                                // Find Subject Code in this line
-                                const codeMatch = line.match(/230\d{3,4}/);
-                                if (codeMatch) {
-                                    const code = codeMatch[0];
-                                    const subjectId = getOrCreateSubject(code, line);
+// ✅ Cursiva real de la celda (GEF: inglés en cursiva)
+const italic = isCellItalic(r, c);
 
-                                    if (!result.assignedPerPeriod[currentPeriod.id][key]) {
-                                        result.assignedPerPeriod[currentPeriod.id][key] = [];
-                                    }
-                                    if (!result.assignedPerPeriod[currentPeriod.id][key].includes(subjectId)) {
-                                        result.assignedPerPeriod[currentPeriod.id][key].push(subjectId);
-                                    }
+for (const subj of subjectsFound) {
+  const subjectId = getOrCreateSubject(subj.code, subj.name, italic);
 
-                                    console.log(`[Import] ✓ Assigned ${code} to ${dateIso} slot ${currentSlotIndex}`);
-                                } else {
-                                    console.log(`[Import] Cell ${c}, line: "${line}" - No code found`);
-                                }
-                            }
+  if (!result.assignedPerPeriod[currentPeriod.id][key]) {
+    result.assignedPerPeriod[currentPeriod.id][key] = [];
+  }
+  if (!result.assignedPerPeriod[currentPeriod.id][key].includes(subjectId)) {
+    result.assignedPerPeriod[currentPeriod.id][key].push(subjectId);
+  }
+}
                         }
                     }
                 }
