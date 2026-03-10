@@ -29,6 +29,7 @@ const emit = defineEmits<{
   (e: 'export-csv'): void;
   (e: 'export-txt'): void;
   (e: 'export-excel'): void;
+  (e: 'export-gef-excel'): void;
   (e: 'export-word'): void;
   (e: 'export-json'): void;
 
