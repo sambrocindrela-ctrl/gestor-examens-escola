@@ -14,6 +14,8 @@ import {
   exportPlannerWord,
 } from "./utils/exporters";
 
+import { exportGEFExcelFromTemplate } from "./utils/exportGEFExcel";
+  
 import type { ImportedCalendarData } from "./utils/importExcelCalendar";
 import type { Subject, AssignedMap } from "./types/examPlanner";
 
@@ -180,6 +182,16 @@ const handleExportExcel = () =>
     subjects: subjects.value,
     roomsData: roomsData.value,
   });
+
+  const handleExportGEFExcel = async () => {
+  await exportGEFExcelFromTemplate({
+    periods: periods.value,
+    slotsPerPeriod: slotsPerPeriod.value,
+    assignedPerPeriod: assignedPerPeriod.value,
+    subjects: subjects.value,
+    fileName: "Calendari_GEF_amb_aules.xlsx",
+  });
+};
 
 const handleExportWord = () =>
   exportPlannerWord({
@@ -402,6 +414,7 @@ function handleImportExcelCalendar(data: ImportedCalendarData) {
         @export-csv="handleExportCSV"
         @export-txt="handleExportTXT"
         @export-excel="handleExportExcel"
+        @export-gef-excel="handleExportGEFExcel"
         @export-word="handleExportWord"
         @export-json="handleExportJSON"
         @import-json="importJSON"
