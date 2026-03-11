@@ -300,14 +300,14 @@ if (!subjectsFound.length) continue;
 const italic = isCellItalic(r, c);
 
 for (const subj of subjectsFound) {
-  const subjectId = getOrCreateSubject(subj.code, subj.name, italic);
+    const subjectId = getOrCreateSubject(subj.code, subj.name, italic);
 
-  if (!result.assignedPerPeriod[currentPeriod.id][key]) {
-    result.assignedPerPeriod[currentPeriod.id][key] = [];
-  }
-  if (!result.assignedPerPeriod[currentPeriod.id][key].includes(subjectId)) {
-    result.assignedPerPeriod[currentPeriod.id][key].push(subjectId);
-  }
+    if (!result.assignedPerPeriod[currentPeriod.id][key]) {
+        result.assignedPerPeriod[currentPeriod.id][key] = [];
+    }
+    if (!result.assignedPerPeriod[currentPeriod.id][key].includes(subjectId)) {
+        result.assignedPerPeriod[currentPeriod.id][key].push(subjectId);
+    }
 }
                         }
                     }
