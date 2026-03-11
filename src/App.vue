@@ -415,6 +415,7 @@ function handleImportExcelCalendar(data: ImportedCalendarData) {
         @export-txt="handleExportTXT"
         @export-excel="handleExportExcel"
         @export-gef-excel="handleExportGEFExcel"
+        @export-gef-excel="handleExportGEFExcel"
         @export-word="handleExportWord"
         @export-json="handleExportJSON"
         @import-json="importJSON"
