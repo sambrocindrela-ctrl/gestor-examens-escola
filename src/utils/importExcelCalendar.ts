@@ -190,22 +190,32 @@ const getOrCreateSubject = (code: string, displayName: string, italic: boolean):
                     let validDatesInRow: { col: number; date: Date }[] = [];
                     for (let c = 1; c < row.length; c++) {
                         const cellVal = row[c];
-                        if (typeof cellVal === "string" || typeof cellVal === "number") {
-                            let date: Date | undefined;
-                            if (typeof cellVal === "number") {
-                                date = new Date(Math.round((cellVal - 25569) * 86400 * 1000));
-                            } else {
-                                const valStr = cellVal.trim();
-                                const normalized = valStr.replace(/[.-]/g, "/");
-                                const parts = normalized.split("/");
-                                if (parts.length === 3) {
-const patterns = ["d/M/yyyy", "dd/MM/yyyy", "d/M/yy", "dd/MM/yy"];
-for (const p of patterns) {
-const d = parse(normalized, p, new Date());
-if (isValid(d)) { date = d; break; }
+if (typeof cellVal === "string" || typeof cellVal === "number") {
+    let date: Date | undefined;
+
+    if (typeof cellVal === "number") {
+        date = new Date(Math.round((cellVal - 25569) * 86400 * 1000));
+    } else {
+        const valStr = cellVal.trim();
+        const normalized = valStr.replace(/[.-]/g, "/");
+        const parts = normalized.split("/");
+
+        if (parts.length === 3) {
+            const patterns = ["d/M/yyyy", "dd/MM/yyyy", "d/M/yy", "dd/MM/yy"];
+            for (const p of patterns) {
+                const d = parse(normalized, p, new Date());
+                if (isValid(d)) {
+                    date = d;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (date && isValid(date)) {
+        validDatesInRow.push({ col: c, date });
+    }
 }
-                                }
-                            }
                     if (validDatesInRow.length >= 2) {
                         console.log(`[Import] Found Date Row with ${validDatesInRow.length} dates`);
                         currentWeekDates = new Array(row.length).fill(null);
