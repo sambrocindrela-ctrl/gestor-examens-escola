@@ -16,23 +16,11 @@ type ExportGEFExcelArgs = {
   fileName?: string;
 };
 
-type RoomsCsvRow = {
-  codi: string;
-  aula: string;
-  data_examen: string;
-  hora_inici: string;
-  hora_fi: string;
-};
-
-type SheetCell = XLSX.CellObject & {
+type SheetCell = {
+  v?: any;
+  t?: string;
   s?: any;
-};
-
-type SlotBlock = {
-  dateIso: string;
-  start: string;
-  end: string;
-  cells: string[]; // direcciones Excel en orden vertical
+  [key: string]: any;
 };
 
 function parseFlexibleDateToIso(value: string): string | null {
@@ -88,7 +76,7 @@ function buildSubjectText(subject: Subject, rooms: string[]): string {
 }
 
 function setCellText(
-  ws: XLSX.WorkSheet,
+  ws: any,
   cellAddress: string,
   text: string,
   italic?: boolean
@@ -185,7 +173,7 @@ async function parseRoomsCsvFile(file?: File | null): Promise<Map<string, string
 
     const key = `${codi}|${dateIso}|${horaInici}|${horaFi}`;
     const arr = map.get(key) || [];
-    arr.push(aula); // conserva el orden del CSV
+    arr.push(aula);
     map.set(key, arr);
   }
 
@@ -198,7 +186,7 @@ function sheetMatchesPeriod(sheetName: string, period: Period): boolean {
 }
 
 function isDateRow(
-  ws: XLSX.WorkSheet,
+  ws: any,
   r: number,
   maxCol: number
 ): Map<number, string> | null {
@@ -223,7 +211,7 @@ function isDateRow(
   return found.size >= 2 ? found : null;
 }
 
-function scanTemplateSlotBlocks(ws: XLSX.WorkSheet): Map<string, string[]> {
+function scanTemplateSlotBlocks(ws: any): Map<string, string[]> {
   const ref = ws["!ref"];
   if (!ref) return new Map();
 
@@ -291,7 +279,7 @@ export async function exportGEFExcelFromTemplate({
   const roomsMap = await parseRoomsCsvFile(roomsCsvFile);
 
   for (const period of periods) {
-    const sheetName = wb.SheetNames.find((sn) => sheetMatchesPeriod(sn, period));
+    const sheetName = wb.SheetNames.find((sn: string) => sheetMatchesPeriod(sn, period));
     if (!sheetName) continue;
 
     const ws = wb.Sheets[sheetName];
