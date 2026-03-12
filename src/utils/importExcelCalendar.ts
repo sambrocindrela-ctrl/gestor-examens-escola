@@ -216,6 +216,7 @@ if (typeof cellVal === "string" || typeof cellVal === "number") {
         validDatesInRow.push({ col: c, date });
     }
 }
+                    }
                     if (validDatesInRow.length >= 2) {
                         console.log(`[Import] Found Date Row with ${validDatesInRow.length} dates`);
                         currentWeekDates = new Array(row.length).fill(null);
