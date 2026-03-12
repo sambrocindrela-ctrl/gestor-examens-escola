@@ -72,9 +72,16 @@ const parseFlexibleDate = (value: string): Date | null => {
 const normalizeTipus = (raw: string): "PARCIAL" | "FINAL" | "REAVALUACIÓ" | null => {
   const upper = raw.toUpperCase();
 
+  if (upper.includes("EXTRAORDINARI") || upper.includes("EXTRAORDINARY")) {
+    return "REAVALUACIÓ";
+  }
+
+  if (upper.includes("REAVALUACIÓ") || upper.includes("REEVALUACIÓ")) {
+    return "REAVALUACIÓ";
+  }
+
   if (upper.includes("PARCIAL")) return "PARCIAL";
   if (upper.includes("FINAL")) return "FINAL";
-  if (upper.includes("REAVALUACIÓ") || upper.includes("REEVALUACIÓ")) return "REAVALUACIÓ";
 
   return null;
 };
