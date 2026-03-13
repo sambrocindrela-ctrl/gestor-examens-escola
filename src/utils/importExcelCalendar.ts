@@ -96,8 +96,8 @@ const inferPeriodFromRow = (
 
   const metadataRegex =
     /Period(?:e)?\s*[:\s]\s*(.*?)[,;]\s*Curs\s*[:\s]\s*(.*?)[,;]\s*Q(?:uad(?:rimestre)?)?\s*[:\s]\s*(\d+)/i;
-  const simpleMetadataRegex =
-    /(PARCIAL(?:S)?|FINAL(?:S)?|REAVALUACIÓ(?:NS)?)[-\s]+(\d{4})[-\s]+(\d)/i;
+const simpleMetadataRegex =
+  /(PARCIAL(?:S)?|FINAL(?:S)?|REAVALUACIÓ(?:NS)?|EXTRAORDINARI(?:S)?|EXTRAORDINARY(?:\s+EXAMS)?)[-\s]+(\d{4})[-\s]+(\d)/i;
 
   const metaMatch = rowString.match(metadataRegex);
   const simpleMatch = rowString.match(simpleMetadataRegex);
@@ -121,9 +121,23 @@ const inferPeriodFromRow = (
   // Tipus
   tipus = normalizeTipus(upper);
 
+  // Tipus
+  tipus = normalizeTipus(upper);
+
   // Quad
   if (upper.includes("TARDOR") || upper.includes("FALL")) quad = 1;
   if (upper.includes("PRIMAVERA") || upper.includes("SPRING")) quad = 2;
+
+  // Extraordinaris / Extraordinary Exams = siempre 2º cuatrimestre
+  if (
+    upper.includes("EXTRAORDINARI") ||
+    upper.includes("EXTRAORDINARY") ||
+    upper.includes("REAVALUACIÓ") ||
+    upper.includes("REEVALUACIÓ")
+  ) {
+    tipus = "REAVALUACIÓ";
+    quad = 2;
+  }
 
   // Curs desde nombre de hoja tipo 2025-1, 2025-2...
   const sheetMatch = sheetName.match(/(\d{4})-(\d)/);
