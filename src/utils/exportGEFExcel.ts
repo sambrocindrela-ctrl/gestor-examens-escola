@@ -79,7 +79,7 @@ function setCellText(
   ws: any,
   cellAddress: string,
   text: string,
-  italic?: boolean
+  italic?: boolean,
   fontColor?: string,
   fillColor?: string
 ) {
@@ -99,7 +99,7 @@ function setCellText(
       font: {
         ...(existing.s?.font || {}),
         italic: !!italic,
-       ...(fontColor ? { color: { rgb: fontColor.replace(/^#/, "") } } : {}),
+        ...(fontColor ? { color: { rgb: fontColor.replace(/^#/, "") } } : {}),
       },
       ...(fillColor
         ? {
