@@ -80,6 +80,8 @@ function setCellText(
   cellAddress: string,
   text: string,
   italic?: boolean
+  fontColor?: string,
+  fillColor?: string
 ) {
   const existing = (ws[cellAddress] || {}) as SheetCell;
 
@@ -97,7 +99,16 @@ function setCellText(
       font: {
         ...(existing.s?.font || {}),
         italic: !!italic,
+       ...(fontColor ? { color: { rgb: fontColor.replace(/^#/, "") } } : {}),
       },
+      ...(fillColor
+        ? {
+            fill: {
+              patternType: "solid",
+              fgColor: { rgb: fillColor.replace(/^#/, "") },
+            },
+          }
+        : {}),
     },
   };
 }
