@@ -182,17 +182,21 @@ export async function importExcelCalendar(
 
         let periodCounter = 1;
 
-        const getOrCreateSubject = (
-          code: string,
-          displayName: string,
-          italic: boolean
-        ): string => {
+const getOrCreateSubject = (
+  code: string,
+  displayName: string,
+  italic: boolean,
+  fontColor?: string,
+  fillColor?: string
+): string => {
           const existing = allSubjects.find((s) => s.codi === code);
-          if (existing) {
-            if (displayName && !existing.displayName) existing.displayName = displayName;
-            if (italic && existing.displayItalic !== true) existing.displayItalic = true;
-            return existing.id;
-          }
+if (existing) {
+  if (displayName && !existing.displayName) existing.displayName = displayName;
+  if (italic && existing.displayItalic !== true) existing.displayItalic = true;
+  if (fontColor && !existing.displayFontColor) existing.displayFontColor = fontColor;
+  if (fillColor && !existing.displayFillColor) existing.displayFillColor = fillColor;
+  return existing.id;
+}
 
           const safeDisplay = (displayName || "").replace(/\s+/g, " ").trim();
 
@@ -204,6 +208,8 @@ export async function importExcelCalendar(
             quadrimestre: 1,
             displayName: safeDisplay || undefined,
             displayItalic: italic || undefined,
+            displayFontColor: fontColor || undefined,
+            displayFillColor: fillColor || undefined,
           };
 
           allSubjects.push(newSub);
@@ -385,10 +391,16 @@ const getCellStyleInfo = (r: number, c: number) => {
                 const subjectsFound = parseCellSubjects(cellContent);
                 if (!subjectsFound.length) continue;
 
-                const italic = isCellItalic(r, c);
+const styleInfo = getCellStyleInfo(r, c);
 
-                for (const subj of subjectsFound) {
-                  const subjectId = getOrCreateSubject(subj.code, subj.name, italic);
+for (const subj of subjectsFound) {
+  const subjectId = getOrCreateSubject(
+    subj.code,
+    subj.name,
+    styleInfo.italic,
+    styleInfo.fontColor,
+    styleInfo.fillColor
+  );
 
                   if (!result.assignedPerPeriod[currentPeriod.id][key]) {
                     result.assignedPerPeriod[currentPeriod.id][key] = [];
