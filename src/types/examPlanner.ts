@@ -23,7 +23,9 @@ export interface Subject {
   MEE?: string;
   MCYBERS?: string;
   displayName?: string;
-  displayItalic?: boolean; 
+  displayItalic?: boolean;
+  displayFontColor?: string;
+  displayFillColor?: string;
 }
 
 export interface TimeSlot {
