@@ -214,10 +214,27 @@ export async function importExcelCalendar(
           const sheet = workbook.Sheets[sheetName];
 
           const isCellItalic = (r: number, c: number): boolean => {
-            const cellRef = XLSX.utils.encode_cell({ r, c });
-            const cell = (sheet as any)[cellRef];
-            return !!cell?.s?.font?.italic;
-          };
+  const cellRef = XLSX.utils.encode_cell({ r, c });
+  const cell = (sheet as any)[cellRef];
+  return !!cell?.s?.font?.italic;
+};
+
+const getCellStyleInfo = (r: number, c: number) => {
+  const cellRef = XLSX.utils.encode_cell({ r, c });
+  const cell = (sheet as any)[cellRef];
+
+  return {
+    italic: !!cell?.s?.font?.italic,
+    fontColor:
+      cell?.s?.font?.color?.rgb ||
+      cell?.s?.font?.color?.ARGB ||
+      undefined,
+    fillColor:
+      cell?.s?.fill?.fgColor?.rgb ||
+      cell?.s?.fill?.fgColor?.ARGB ||
+      undefined,
+  };
+};
 
           const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
