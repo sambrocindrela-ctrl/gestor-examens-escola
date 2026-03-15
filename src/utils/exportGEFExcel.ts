@@ -324,12 +324,14 @@ export async function exportGEFExcelFromTemplate({
 
         if (!targetCell) continue;
 
-        setCellText(
-          ws,
-          targetCell,
-          buildSubjectText(subject, rooms),
-          !!subject.displayItalic
-        );
+ setCellText(
+  ws,
+  targetCell,
+  buildSubjectText(subject, rooms),
+  !!subject.displayItalic,
+  subject.displayFontColor,
+  subject.displayFillColor
+);
 
         usedIndexByKey.set(templateKey, nextIndex + 1);
       }
