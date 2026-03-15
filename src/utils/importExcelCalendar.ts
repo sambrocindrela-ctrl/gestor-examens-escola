@@ -219,12 +219,6 @@ if (existing) {
         for (const sheetName of workbook.SheetNames) {
           const sheet = workbook.Sheets[sheetName];
 
-          const isCellItalic = (r: number, c: number): boolean => {
-  const cellRef = XLSX.utils.encode_cell({ r, c });
-  const cell = (sheet as any)[cellRef];
-  return !!cell?.s?.font?.italic;
-};
-
 const getCellStyleInfo = (r: number, c: number) => {
   const cellRef = XLSX.utils.encode_cell({ r, c });
   const cell = (sheet as any)[cellRef];
