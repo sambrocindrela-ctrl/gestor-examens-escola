@@ -285,7 +285,7 @@ function scanTemplateSlotBlocks(ws: any): Map<string, string[]> {
       result.set(key, arr);
     }
   }
-
+  
   return result;
 }
 
