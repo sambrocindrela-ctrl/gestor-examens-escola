@@ -66,10 +66,6 @@ function guessSubjectIsEnglish(subject: Subject): boolean {
   return !!subject.displayItalic;
 }
 
-function guessSubjectIsEnglish(subject: Subject): boolean {
-  return !!subject.displayItalic;
-}
-
 function buildSubjectText(subject: Subject, rooms: string[]): string {
   const mainLabel = (subject.displayName || subject.sigles || subject.codi).trim();
   const roomPrefix = guessSubjectIsEnglish(subject) ? "Classroom: " : "Aula: ";
