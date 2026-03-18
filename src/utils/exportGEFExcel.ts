@@ -66,15 +66,19 @@ function guessSubjectIsEnglish(subject: Subject): boolean {
   return !!subject.displayItalic;
 }
 
+function guessSubjectIsEnglish(subject: Subject): boolean {
+  return !!subject.displayItalic;
+}
+
 function buildSubjectText(subject: Subject, rooms: string[]): string {
   const mainLabel = (subject.displayName || subject.sigles || subject.codi).trim();
-  const roomPrefix = guessSubjectIsEnglish(subject) ? "classroom: " : "aula: ";
+  const roomPrefix = guessSubjectIsEnglish(subject) ? "Classroom: " : "Aula: ";
 
   if (rooms.length > 0) {
-    return `${mainLabel} ${subject.codi} ${roomPrefix}${rooms.join(", ")}`;
+    return `${mainLabel}\n${subject.codi}\n${roomPrefix}${rooms.join(", ")}`;
   }
 
-  return `${mainLabel} ${subject.codi}`;
+  return `${mainLabel}\n${subject.codi}`;
 }
 
 function setCellText(
@@ -109,6 +113,7 @@ function setCellText(
       ...(cleanFillColor
         ? {
             fill: {
+              ...(existing.s?.fill || {}),
               patternType: "solid",
               fgColor: { rgb: cleanFillColor },
             },
