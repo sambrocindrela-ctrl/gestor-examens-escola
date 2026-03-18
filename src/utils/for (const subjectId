@@ -5,12 +5,14 @@ import type {
   Subject,
   SlotsPerPeriod,
   AssignedPerPeriod,
+  RoomsDataPerPeriod,
 } from "../types/examPlanner";
 
 type ExportGEFExcelArgs = {
   periods: Period[];
   slotsPerPeriod: SlotsPerPeriod;
   assignedPerPeriod: AssignedPerPeriod;
+  roomsData: RoomsDataPerPeriod;
   subjects: Subject[];
   roomsCsvFile?: File | null;
   fileName?: string;
@@ -191,6 +193,19 @@ async function parseRoomsCsvFile(file?: File | null): Promise<Map<string, string
   return map;
 }
 
+function getRoomsFromRoomsData(
+  roomsData: RoomsDataPerPeriod,
+  periodId: number,
+  dateIso: string,
+  slotIndex: number,
+  subjectId: string
+): string[] {
+  const key = `${dateIso}|${slotIndex}`;
+  const periodRooms = roomsData[periodId] || {};
+  const cellRooms = periodRooms[key] || {};
+  return cellRooms[subjectId]?.rooms || [];
+}
+
 function sheetMatchesPeriod(sheetName: string, period: Period): boolean {
   if (!period.curs || !period.quad) return true;
   return sheetName.trim() === `${period.curs}-${period.quad}`;
@@ -275,6 +290,7 @@ export async function exportGEFExcelFromTemplate({
   periods,
   slotsPerPeriod,
   assignedPerPeriod,
+  roomsData,
   subjects,
   roomsCsvFile = null,
   fileName = "Calendari_GEF_amb_aules.xlsx",
@@ -314,9 +330,18 @@ export async function exportGEFExcelFromTemplate({
         const subject = getSubjectById(subjects, subjectId);
         if (!subject) continue;
 
-        const roomsKey = `${subject.codi}|${dateIso}|${slot.start}|${slot.end}`;
-        const rooms = roomsMap.get(roomsKey) || [];
+const roomsFromState = getRoomsFromRoomsData(
+  roomsData,
+  period.id,
+  dateIso,
+  slotIndex,
+  subjectId
+);
 
+const roomsFromCsv =
+  roomsMap.get(`${subject.codi}|${dateIso}|${slot.start}|${slot.end}`) || [];
+
+const rooms = roomsFromState.length ? roomsFromState : roomsFromCsv;
         const nextIndex = usedIndexByKey.get(templateKey) || 0;
         const targetCell =
           candidateCells[nextIndex] ||
