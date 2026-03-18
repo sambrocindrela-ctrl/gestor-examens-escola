@@ -106,11 +106,11 @@ function setCellText(
         italic: !!italic,
         ...(cleanFontColor ? { color: { rgb: cleanFontColor } } : {}),
       },
-      ...(cleanFillColor   
+      ...(cleanFillColor
         ? {
             fill: {
               patternType: "solid",
-              fgColor: { rgb: fillColor.replace(/^#/, "") },
+              fgColor: { rgb: cleanFillColor },
             },
           }
         : {}),
