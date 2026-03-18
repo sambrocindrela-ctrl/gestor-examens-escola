@@ -87,6 +87,9 @@ function setCellText(
 ) {
   const existing = (ws[cellAddress] || {}) as SheetCell;
 
+  const cleanFontColor = fontColor?.replace(/^#/, "");
+  const cleanFillColor = fillColor?.replace(/^#/, "");
+
   ws[cellAddress] = {
     ...existing,
     t: "s",
@@ -101,9 +104,9 @@ function setCellText(
       font: {
         ...(existing.s?.font || {}),
         italic: !!italic,
-        ...(fontColor ? { color: { rgb: fontColor.replace(/^#/, "") } } : {}),
+        ...(cleanFontColor ? { color: { rgb: cleanFontColor } } : {}),
       },
-      ...(fillColor
+      ...(cleanFillColor   
         ? {
             fill: {
               patternType: "solid",
