@@ -189,6 +189,7 @@ const handleExportExcel = () =>
     slotsPerPeriod: slotsPerPeriod.value,
     assignedPerPeriod: assignedPerPeriod.value,
     subjects: subjects.value,
+    roomsData: roomsData.value,
     fileName: "Calendari_GEF_amb_aules.xlsx",
   });
 };
