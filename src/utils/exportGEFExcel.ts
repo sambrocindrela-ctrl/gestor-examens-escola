@@ -68,6 +68,7 @@ function guessSubjectIsEnglish(subject: Subject): boolean {
 
 function buildSubjectText(subject: Subject, rooms: string[]): string {
   const mainLabel = (subject.displayName || subject.sigles || subject.codi).trim();
+    const code = subject.codi || subject.sigles?.replace("SUB_", "") || "";
   const roomPrefix = guessSubjectIsEnglish(subject) ? "Classroom: " : "Aula: ";
 
   if (rooms.length > 0) {
@@ -353,7 +354,6 @@ const rooms = roomsFromState.length ? roomsFromState : roomsFromCsv;
 
         if (!targetCell) continue;
 
-        console.log(subject);
  setCellText(
   ws,
   targetCell,
