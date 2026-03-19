@@ -116,7 +116,6 @@ function setCellText(
         : {}),
     },
   };
-}
 
 function parseSemicolonCsvLine(line: string): string[] {
   const result: string[] = [];
