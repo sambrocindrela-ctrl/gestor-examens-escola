@@ -62,10 +62,6 @@ function getSubjectById(subjects: Subject[], id: string): Subject | undefined {
   return subjects.find((s) => s.id === id);
 }
 
-function guessSubjectIsEnglish(subject: Subject): boolean {
-  return !!subject.displayItalic;
-}
-
 function buildSubjectText(subject: Subject, rooms: string[]): string {
   const mainLabel = (subject.displayName || subject.sigles || subject.codi || "").trim();
   const code = subject.codi || subject.sigles?.replace("SUB_", "") || "";
