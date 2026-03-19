@@ -116,6 +116,8 @@ function setCellText(
         : {}),
     },
   };
+  const cellPos = XLSX.utils.decode_cell(cellAddress);
+  const rowIndex = cellPos.r;
 
 function parseSemicolonCsvLine(line: string): string[] {
   const result: string[] = [];
