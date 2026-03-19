@@ -353,6 +353,7 @@ const rooms = roomsFromState.length ? roomsFromState : roomsFromCsv;
 
         if (!targetCell) continue;
 
+        console.log(subject);
  setCellText(
   ws,
   targetCell,
