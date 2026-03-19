@@ -116,18 +116,7 @@ function setCellText(
         : {}),
     },
   };
-  const cellPos = XLSX.utils.decode_cell(cellAddress);
-  const rowIndex = cellPos.r;
-    if (!ws["!rows"]) ws["!rows"] = [];
-
-  const lineCount = String(text).split("\n").length;
-  const minHeight = lineCount >= 3 ? 48 : lineCount === 2 ? 32 : 20;
-
-  ws["!rows"][rowIndex] = {
-    ...(ws["!rows"][rowIndex] || {}),
-    hpt: Math.max(ws["!rows"][rowIndex]?.hpt || 0, minHeight),
-  };
-}
+  }
 
 function parseSemicolonCsvLine(line: string): string[] {
   const result: string[] = [];
