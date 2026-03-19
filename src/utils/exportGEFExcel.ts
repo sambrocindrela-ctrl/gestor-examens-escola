@@ -67,15 +67,15 @@ function guessSubjectIsEnglish(subject: Subject): boolean {
 }
 
 function buildSubjectText(subject: Subject, rooms: string[]): string {
-  const mainLabel = (subject.displayName || subject.sigles || subject.codi).trim();
-    const code = subject.codi || subject.sigles?.replace("SUB_", "") || "";
-  const roomPrefix = guessSubjectIsEnglish(subject) ? "Classroom: " : "Aula: ";
+  const mainLabel = (subject.displayName || subject.sigles || subject.codi || "").trim();
+  const code = subject.codi || subject.sigles?.replace("SUB_", "") || "";
+  const roomPrefix = subject.displayItalic ? "Classroom: " : "Aula: ";
 
   if (rooms.length > 0) {
-    return `${mainLabel}\n${subject.codi}\n${roomPrefix}${rooms.join(", ")}`;
+    return `${mainLabel}\n[Codi: ${code}]\n${roomPrefix}${rooms.join(", ")}`;
   }
 
-  return `${mainLabel}\n${subject.codi}`;
+  return `${mainLabel}\n[Codi: ${code}]`;
 }
 
 function setCellText(
