@@ -65,14 +65,15 @@ function getSubjectById(subjects: Subject[], id: string): Subject | undefined {
 function buildSubjectText(subject: Subject, rooms: string[]): string {
   const mainLabel = (subject.displayName || subject.sigles || subject.codi || "").trim();
   const code = subject.codi || subject.sigles?.replace("SUB_", "") || "";
-const isEnglish = !!subject.displayItalic;
-const roomPrefix = isEnglish ? "Classroom: " : "Aula: ";
-  
+
+  const isEnglish = !!subject.displayItalic;
+  const roomPrefix = isEnglish ? "Classroom: " : "Aula: ";
+
   if (rooms.length > 0) {
-    return `${mainLabel}\n[Codi: ${code}]\n${roomPrefix}${rooms.join(", ")}`;
+    return `${mainLabel}\n${code}\n${roomPrefix}${rooms.join(", ")}`;
   }
 
-  return `${mainLabel}\n[Codi: ${code}]`;
+  return `${mainLabel}\n${code}`;
 }
 
 function setCellText(
