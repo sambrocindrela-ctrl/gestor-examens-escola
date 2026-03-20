@@ -223,8 +223,11 @@ const getCellStyleInfo = (r: number, c: number) => {
   const cellRef = XLSX.utils.encode_cell({ r, c });
   const cell = (sheet as any)[cellRef];
 
+  const italic = !!cell?.s?.font?.italic;
+
   return {
-    italic: !!cell?.s?.font?.italic,
+    italic,
+    language: italic ? "en" as const : "ca" as const,
     fontColor:
       cell?.s?.font?.color?.rgb ||
       cell?.s?.font?.color?.ARGB ||
