@@ -194,6 +194,7 @@ const getOrCreateSubject = (
           const existing = allSubjects.find((s) => s.codi === code);
 if (existing) {
   if (displayName && !existing.displayName) existing.displayName = displayName;
+  if (language && !existing.displayLanguage) existing.displayLanguage = language;
   if (italic && existing.displayItalic !== true) existing.displayItalic = true;
   if (fontColor && !existing.displayFontColor) existing.displayFontColor = fontColor;
   if (fillColor && !existing.displayFillColor) existing.displayFillColor = fillColor;
