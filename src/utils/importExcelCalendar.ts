@@ -186,9 +186,11 @@ const getOrCreateSubject = (
   code: string,
   displayName: string,
   italic: boolean,
+  language: "ca" | "en",
   fontColor?: string,
   fillColor?: string
 ): string => {
+
           const existing = allSubjects.find((s) => s.codi === code);
 if (existing) {
   if (displayName && !existing.displayName) existing.displayName = displayName;
