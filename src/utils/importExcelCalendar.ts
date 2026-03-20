@@ -211,6 +211,7 @@ if (existing) {
             quadrimestre: 1,
             displayName: safeDisplay || undefined,
             displayItalic: italic || undefined,
+            displayLanguage: language,
             displayFontColor: fontColor || undefined,
             displayFillColor: fillColor || undefined,
           };
