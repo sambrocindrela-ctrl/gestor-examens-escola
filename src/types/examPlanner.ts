@@ -26,6 +26,7 @@ export interface Subject {
   displayItalic?: boolean;
   displayFontColor?: string;
   displayFillColor?: string;
+  displayLanguage?: "ca" | "en";
 }
 
 export interface TimeSlot {
