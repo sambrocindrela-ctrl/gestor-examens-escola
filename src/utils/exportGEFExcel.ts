@@ -66,7 +66,7 @@ function buildSubjectText(subject: Subject, rooms: string[]): string {
   const mainLabel = (subject.displayName || subject.sigles || subject.codi || "").trim();
   const code = subject.codi || subject.sigles?.replace("SUB_", "") || "";
 
-  const isEnglish = !!subject.displayItalic;
+  const isEnglish = subject.displayLanguage === "en";
   const roomPrefix = isEnglish ? "Classroom: " : "Aula: ";
 
   if (rooms.length > 0) {
