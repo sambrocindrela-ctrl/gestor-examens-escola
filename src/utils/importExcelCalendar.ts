@@ -399,6 +399,7 @@ for (const subj of subjectsFound) {
     subj.code,
     subj.name,
     styleInfo.italic,
+    styleInfo.language,
     styleInfo.fontColor,
     styleInfo.fillColor
   );
