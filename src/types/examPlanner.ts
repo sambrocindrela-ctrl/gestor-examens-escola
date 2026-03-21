@@ -34,7 +34,7 @@ export interface TimeSlot {
   end: string;
 }
 
-export type AssignedMap = Record<string, string[]>;     // "YYYY-MM-DD|slotIndex" → [subjectId,...]
+export type AssignedMap = Record<string, string[]>; // "YYYY-MM-DD|slotIndex" → [subjectId,...]
 export type AssignedPerPeriod = Record<number, AssignedMap>;
 export type SlotsPerPeriod = Record<number, TimeSlot[]>;
 
@@ -50,3 +50,25 @@ export type RoomsDataPerPeriod = Record<
   number,
   Record<string, RoomsMapPerCell>
 >;
+
+/**
+ * Foto del contingut persistent del planificador.
+ * No inclou estat temporal d'UI (modals, hover, últim delete, etc.).
+ */
+export interface ExamPlannerSnapshot {
+  subjects: Subject[];
+  periods: Period[];
+  activePid: number;
+  slotsPerPeriod: SlotsPerPeriod;
+  assignedPerPeriod: AssignedPerPeriod;
+  roomsData: RoomsDataPerPeriod;
+  allowedPeriodsBySubject: Record<string, number[]>;
+  hiddenSubjectIds: string[];
+}
+
+/**
+ * Document persistent i versionat per guardar en URL, JSON o backend remot.
+ */
+export interface ExamPlannerDocument extends ExamPlannerSnapshot {
+  version: 1;
+}
