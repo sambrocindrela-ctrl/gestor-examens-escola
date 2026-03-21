@@ -14,7 +14,13 @@ import type {
   RoomsEnroll,
   AssignedMap,
   RoomsMapPerCell,
+  ExamPlannerSnapshot,
 } from "../types/examPlanner";
+
+import {
+  buildPlannerDocumentFromSnapshot,
+  buildSnapshotFromPlannerDocument,
+} from "../utils/plannerSerialization";
 
 /* ---------- Helpers ---------- */
 function mondayOfWeek(d: Date) {
@@ -22,6 +28,7 @@ function mondayOfWeek(d: Date) {
   const diff = (day + 6) % 7; // 0 si dilluns
   return startOfDay(subDays(d, diff));
 }
+
 function fridayOfWeek(d: Date) {
   const mon = mondayOfWeek(d);
   return startOfDay(addDays(mon, 4));
@@ -91,15 +98,41 @@ export function useExamPlannerState() {
     periods.value.find((p) => p.id === activePid.value)
   );
 
-  /* --- Actions --- */
+  /* --- Snapshot helpers --- */
+  function getSnapshot(): ExamPlannerSnapshot {
+    return {
+      subjects: subjects.value,
+      periods: periods.value,
+      activePid: activePid.value,
+      slotsPerPeriod: slotsPerPeriod.value,
+      assignedPerPeriod: assignedPerPeriod.value,
+      roomsData: roomsData.value,
+      allowedPeriodsBySubject: allowedPeriodsBySubject.value,
+      hiddenSubjectIds: hiddenSubjectIds.value,
+    };
+  }
 
+  function applySnapshot(snapshot: ExamPlannerSnapshot) {
+    subjects.value = snapshot.subjects ?? [];
+    periods.value = snapshot.periods ?? [];
+    activePid.value = snapshot.activePid ?? 1;
+    slotsPerPeriod.value = snapshot.slotsPerPeriod ?? {};
+    assignedPerPeriod.value = snapshot.assignedPerPeriod ?? {};
+    roomsData.value = snapshot.roomsData ?? {};
+    allowedPeriodsBySubject.value = snapshot.allowedPeriodsBySubject ?? {};
+    hiddenSubjectIds.value = snapshot.hiddenSubjectIds ?? [];
+  }
+
+  /* --- Actions --- */
   function addPeriod() {
     if (periods.value.length >= 5) {
       alert("Pots tenir com a màxim 5 períodes.");
       return;
     }
+
     const newId = Math.max(0, ...periods.value.map((p) => p.id)) + 1;
     const today = new Date();
+
     const newPeriod: Period = {
       id: newId,
       label: `Període ${newId}`,
@@ -110,6 +143,7 @@ export function useExamPlannerState() {
       quad: undefined,
       blackouts: [],
     };
+
     periods.value.push(newPeriod);
     slotsPerPeriod.value[newId] = [{ start: "08:00", end: "10:00" }];
     activePid.value = newId;
@@ -117,6 +151,7 @@ export function useExamPlannerState() {
 
   function removePeriod(id: number) {
     if (!confirm("Segur que vols eliminar aquest període?")) return;
+
     periods.value = periods.value.filter((p) => p.id !== id);
 
     const apCopy = { ...assignedPerPeriod.value };
@@ -130,15 +165,19 @@ export function useExamPlannerState() {
     const rdCopy = { ...roomsData.value };
     delete rdCopy[id];
     roomsData.value = rdCopy;
+
+    if (activePid.value === id) {
+      activePid.value = periods.value[0]?.id ?? 1;
+    }
   }
 
   function deleteSubjectPermanently(subjectId: string) {
     const subj = subjects.value.find((s) => s.id === subjectId);
     if (!subj) return;
+
     if (
       !confirm(
-        `Eliminar definitivament "${subj.sigles || subj.codi
-        }" del catàleg?\nS’esborrarà de la safata, del calendari i de les dades d’aules/estudiants.`
+        `Eliminar definitivament "${subj.sigles || subj.codi}" del catàleg?\nS’esborrarà de la safata, del calendari i de les dades d’aules/estudiants.`
       )
     ) {
       return;
@@ -146,31 +185,39 @@ export function useExamPlannerState() {
 
     // 1) Snapshot per Desfer
     const placed: Record<number, string[]> = {};
+
     for (const [pidStr, amap] of Object.entries(assignedPerPeriod.value)) {
       const pid = Number(pidStr);
       const cells: string[] = [];
+
       for (const [cell, ids] of Object.entries(amap)) {
         if (ids.includes(subjectId)) cells.push(cell);
       }
+
       if (cells.length) placed[pid] = cells;
     }
 
     const roomsSnap: Record<number, Record<string, RoomsEnroll>> = {};
+
     for (const [pidStr, per] of Object.entries(roomsData.value)) {
       const pid = Number(pidStr);
       const perOut: Record<string, RoomsEnroll> = {};
+
       for (const [cellKey, map] of Object.entries(per)) {
         const entry = map[subjectId];
-        if (entry)
+        if (entry) {
           perOut[cellKey] = {
             rooms: [...(entry.rooms || [])],
             students: entry.students,
           };
+        }
       }
+
       if (Object.keys(perOut).length) roomsSnap[pid] = perOut;
     }
 
     const allowed = allowedPeriodsBySubject.value[subjectId];
+
     lastDeleted.value = {
       subject: subj,
       allowedPeriods: allowed ? [...allowed] : undefined,
@@ -189,26 +236,34 @@ export function useExamPlannerState() {
 
     // Clean assigned
     const assignedCopy: AssignedPerPeriod = {};
+
     for (const [pidStr, amap] of Object.entries(assignedPerPeriod.value)) {
       const newMap: AssignedMap = {};
+
       for (const [cell, ids] of Object.entries(amap)) {
         const next = ids.filter((id) => id !== subjectId);
         if (next.length) newMap[cell] = next;
       }
+
       assignedCopy[Number(pidStr)] = newMap;
     }
+
     assignedPerPeriod.value = assignedCopy;
 
     // Clean rooms
     const roomsCopy: RoomsDataPerPeriod = {};
+
     for (const [pidStr, per] of Object.entries(roomsData.value)) {
       const newPer: Record<string, RoomsMapPerCell> = {};
+
       for (const [cellKey, map] of Object.entries(per)) {
         const { [subjectId]: _drop, ...rest } = map;
         if (Object.keys(rest).length) newPer[cellKey] = rest;
       }
+
       roomsCopy[Number(pidStr)] = newPer;
     }
+
     roomsData.value = roomsCopy;
   }
 
@@ -228,23 +283,29 @@ export function useExamPlannerState() {
 
     // 3) Placed
     const assignedCopy = { ...assignedPerPeriod.value };
+
     for (const [pidStr, cells] of Object.entries(snap.placed)) {
       const pid = Number(pidStr);
       const amap = { ...(assignedCopy[pid] ?? {}) };
+
       for (const cell of cells) {
         const setIds = new Set(amap[cell] ?? []);
         setIds.add(snap.subject.id);
         amap[cell] = Array.from(setIds);
       }
+
       assignedCopy[pid] = amap;
     }
+
     assignedPerPeriod.value = assignedCopy;
 
     // 4) Rooms
     const roomsCopy = JSON.parse(JSON.stringify(roomsData.value));
+
     for (const [pidStr, per] of Object.entries(snap.rooms)) {
       const pid = Number(pidStr);
       roomsCopy[pid] = roomsCopy[pid] || {};
+
       for (const [cellKey, info] of Object.entries(per)) {
         roomsCopy[pid][cellKey] = roomsCopy[pid][cellKey] || {};
         roomsCopy[pid][cellKey][snap.subject.id] = {
@@ -253,24 +314,16 @@ export function useExamPlannerState() {
         };
       }
     }
-    roomsData.value = roomsCopy;
 
+    roomsData.value = roomsCopy;
     lastDeleted.value = null;
   }
 
   /* --- Persistence --- */
   function saveStateToUrl() {
-    const payload = {
-      subjects: subjects.value,
-      periods: periods.value,
-      slotsPerPeriod: slotsPerPeriod.value,
-      assignedPerPeriod: assignedPerPeriod.value,
-      activePid: activePid.value,
-      roomsData: roomsData.value,
-      allowedPeriodsBySubject: allowedPeriodsBySubject.value,
-      hiddenSubjectIds: hiddenSubjectIds.value,
-    };
-    const packed = compressToEncodedURIComponent(JSON.stringify(payload));
+    const snapshot = getSnapshot();
+    const document = buildPlannerDocumentFromSnapshot(snapshot);
+    const packed = compressToEncodedURIComponent(JSON.stringify(document));
     const url = new URL(window.location.href);
     url.hash = `state=${packed}`;
     history.replaceState(null, "", url.toString());
@@ -280,20 +333,14 @@ export function useExamPlannerState() {
   function loadStateFromUrl(): boolean {
     const m = (window.location.hash || "").match(/[#&]state=([^&]+)/);
     if (!m) return false;
+
     try {
       const json = decompressFromEncodedURIComponent(m[1]);
       if (!json) return false;
-      const data = JSON.parse(json);
-      if (Array.isArray(data.subjects)) subjects.value = data.subjects;
-      if (Array.isArray(data.periods)) periods.value = data.periods;
-      if (data.slotsPerPeriod) slotsPerPeriod.value = data.slotsPerPeriod;
-      if (data.assignedPerPeriod) assignedPerPeriod.value = data.assignedPerPeriod;
-      if (data.roomsData) roomsData.value = data.roomsData;
-      if (data.allowedPeriodsBySubject)
-        allowedPeriodsBySubject.value = data.allowedPeriodsBySubject;
-      if (Array.isArray(data.hiddenSubjectIds))
-        hiddenSubjectIds.value = data.hiddenSubjectIds;
-      if (typeof data.activePid === "number") activePid.value = data.activePid;
+
+      const parsed = JSON.parse(json);
+      const snapshot = buildSnapshotFromPlannerDocument(parsed);
+      applySnapshot(snapshot);
       return true;
     } catch {
       return false;
@@ -305,6 +352,7 @@ export function useExamPlannerState() {
       saveStateToUrl();
       return;
     }
+
     navigator.clipboard
       .writeText(window.location.href)
       .then(() => alert("Enllaç copiat!"))
@@ -327,6 +375,9 @@ export function useExamPlannerState() {
     allowedPeriodsBySubject,
     hiddenSubjectIds,
     lastDeleted,
+
+    getSnapshot,
+    applySnapshot,
 
     addPeriod,
     removePeriod,
