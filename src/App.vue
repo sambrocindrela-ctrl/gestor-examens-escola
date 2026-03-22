@@ -23,6 +23,8 @@ import PlannerToolbar from "./components/PlannerToolbar.vue";
 import SubjectsTray from "./components/SubjectsTray.vue";
 import ExamCalendarGrid from "./components/ExamCalendarGrid.vue";
 import TrashBin from "./components/TrashBin.vue";
+import { buildPlannerDocumentFromSnapshot } from "./utils/plannerSerialization";
+import { remoteCalendarRepository } from "./services/remoteCalendarRepository";
 
 const {
   subjects,
@@ -35,6 +37,8 @@ const {
   allowedPeriodsBySubject,
   hiddenSubjectIds,
   lastDeleted,
+
+  getSnapshot,
   
   addPeriod,
   removePeriod,
@@ -379,6 +383,25 @@ function handleImportExcelCalendar(data: ImportedCalendarData) {
     activePid.value = data.periods[0].id;
   }
 }
+async function handleTestSaveSupabase() {
+  try {
+    const snapshot = getSnapshot();
+    const document = buildPlannerDocumentFromSnapshot(snapshot);
+
+    const saved = await remoteCalendarRepository.createCalendar({
+      name: `Prova ${new Date().toLocaleString("ca-ES")}`,
+      academicYear: "prova",
+      document,
+    });
+
+    alert(`Calendari guardat a Supabase amb id: ${saved.id}`);
+  } catch (err) {
+    console.error("Error guardant a Supabase:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    alert(`Error guardant a Supabase:\n\n${message}`);
+  }
+}
+
 </script>
 
 <template>
@@ -395,6 +418,15 @@ function handleImportExcelCalendar(data: ImportedCalendarData) {
         </code>
         . Opcional: <code class="bg-gray-100 px-1 rounded">MET,MATT,MEE,MCYBERS</code>.
       </p>
+
+      <div class="mb-4">
+  <button
+    class="px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-700"
+    @click="handleTestSaveSupabase"
+  >
+    Prova guardar Supabase
+  </button>
+</div>
 
       <PlannerToolbar
         :availableSubjects="availableSubjects"
