@@ -20,5 +20,6 @@ export interface CalendarRepository {
   createCalendar(input: CreateCalendarInput): Promise<SavedCalendar>;
   updateCalendar(input: UpdateCalendarInput): Promise<SavedCalendar>;
   deleteCalendar(id: string): Promise<void>;
+  renameCalendar(id: string, newName: string): Promise<SavedCalendar>;
   duplicateCalendar(id: string, newName: string): Promise<SavedCalendar>;
 }
