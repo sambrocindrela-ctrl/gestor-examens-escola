@@ -479,6 +479,39 @@ async function handleLoadLatestSupabaseCalendar() {
     alert(`Error carregant l'últim calendari de Supabase:\n\n${message}`);
   }
 }
+
+async function handleDeleteSelectedSupabaseCalendar() {
+  if (!selectedCalendarId.value) {
+    alert("No hi ha cap calendari seleccionat.");
+    return;
+  }
+
+  const selected = savedCalendars.value.find(
+    (cal) => cal.id === selectedCalendarId.value
+  );
+
+  const label = selected?.name ?? selectedCalendarId.value;
+
+  if (!confirm(`Segur que vols eliminar aquest calendari?\n\n${label}`)) {
+    return;
+  }
+
+  try {
+    await remoteCalendarRepository.deleteCalendar(selectedCalendarId.value);
+
+    savedCalendars.value = savedCalendars.value.filter(
+      (cal) => cal.id !== selectedCalendarId.value
+    );
+
+    selectedCalendarId.value = "";
+
+    alert("Calendari eliminat de Supabase.");
+  } catch (err) {
+    console.error("Error eliminant calendari de Supabase:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    alert(`Error eliminant calendari de Supabase:\n\n${message}`);
+  }
+}  
   
 </script>
 
@@ -539,6 +572,14 @@ async function handleLoadLatestSupabaseCalendar() {
   >
     Carregar seleccionat
   </button>
+
+  <button
+  class="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+  @click="handleDeleteSelectedSupabaseCalendar"
+>
+  Eliminar seleccionat
+</button>
+  
 </div>
 
       <PlannerToolbar
