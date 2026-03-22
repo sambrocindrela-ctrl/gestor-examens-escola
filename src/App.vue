@@ -389,18 +389,26 @@ function handleImportExcelCalendar(data: ImportedCalendarData) {
     activePid.value = data.periods[0].id;
   }
 }
-async function handleTestSaveSupabase() {
+  
+async function handleSaveSupabaseWithName() {
   try {
+    const name = prompt("Nom del calendari:");
+
+    if (!name || !name.trim()) {
+      alert("Cal indicar un nom.");
+      return;
+    }
+
     const snapshot = getSnapshot();
     const document = buildPlannerDocumentFromSnapshot(snapshot);
 
     const saved = await remoteCalendarRepository.createCalendar({
-      name: `Prova ${new Date().toLocaleString("ca-ES")}`,
-      academicYear: "prova",
+      name: name.trim(),
+      academicYear: "",
       document,
     });
 
-    alert(`Calendari guardat a Supabase amb id: ${saved.id}`);
+    alert(`Calendari guardat: ${saved.name}`);
   } catch (err) {
     console.error("Error guardant a Supabase:", err);
     const message = err instanceof Error ? err.message : String(err);
@@ -490,13 +498,13 @@ async function handleLoadLatestSupabaseCalendar() {
       </p>
 
 <div class="mb-4 flex flex-wrap gap-3 items-center">
-  <button
-    class="px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-700"
-    @click="handleTestSaveSupabase"
-  >
-    Prova guardar Supabase
-  </button>
-
+<button
+  class="px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-700"
+  @click="handleSaveSupabaseWithName"
+>
+  Guardar a Supabase
+</button>
+  
   <button
     class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
     @click="handleListSupabaseCalendars"
