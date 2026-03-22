@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import type { Subject, Period } from "../types/examPlanner";
+import type { CalendarSummary } from "../types/savedCalendar";
 import { importExcelCalendar, type ImportedCalendarData } from "../utils/importExcelCalendar";
 
 const props = defineProps<{
@@ -10,6 +11,9 @@ const props = defineProps<{
   periods: Period[];
   activePid: number;
   isAdminMode: boolean;
+
+  savedCalendars: CalendarSummary[];
+  selectedCalendarId: string;
 }>();
 
 const emit = defineEmits<{
@@ -36,6 +40,14 @@ const emit = defineEmits<{
   (e: 'save-state'): void;
   (e: 'load-state'): void;
   (e: 'copy-link'): void;
+
+  (e: 'save-supabase'): void;
+  (e: 'list-supabase-calendars'): void;
+  (e: 'load-latest-supabase-calendar'): void;
+  (e: 'load-selected-supabase-calendar', id: string): void;
+  (e: 'rename-selected-supabase-calendar'): void;
+  (e: 'delete-selected-supabase-calendar'): void;
+  (e: 'set-selected-calendar-id', id: string): void;
 
   (e: 'toggle-admin-mode', password?: string): boolean;
 }>();
@@ -271,6 +283,71 @@ function handleImportExcel(event: Event) {
         </div>
       </div>
     </div>
+
+    <div class="border rounded-xl p-3 bg-emerald-50">
+  <h3 class="text-sm font-semibold text-gray-700 mb-3">
+    ☁️ Calendaris guardats a Supabase
+  </h3>
+
+  <div class="flex flex-wrap gap-3 items-center">
+    <button
+      @click="emit('save-supabase')"
+      class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
+    >
+      Guardar a Supabase
+    </button>
+
+    <button
+      @click="emit('list-supabase-calendars')"
+      class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
+    >
+      Llistar calendaris
+    </button>
+
+    <button
+      @click="emit('load-latest-supabase-calendar')"
+      class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
+    >
+      Carregar últim
+    </button>
+
+    <select
+      :value="selectedCalendarId"
+      @change="emit('set-selected-calendar-id', ($event.target as HTMLSelectElement).value)"
+      class="px-3 py-2 border rounded bg-white min-w-[320px]"
+    >
+      <option value="">Selecciona un calendari</option>
+      <option
+        v-for="cal in savedCalendars"
+        :key="cal.id"
+        :value="cal.id"
+      >
+        {{ cal.name }} — {{ cal.updatedAt }}
+      </option>
+    </select>
+
+    <button
+      @click="emit('load-selected-supabase-calendar', selectedCalendarId)"
+      class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
+    >
+      Carregar seleccionat
+    </button>
+
+    <button
+      @click="emit('rename-selected-supabase-calendar')"
+      class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
+    >
+      Reanomenar seleccionat
+    </button>
+
+    <button
+      @click="emit('delete-selected-supabase-calendar')"
+      class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
+    >
+      Eliminar seleccionat
+    </button>
+  </div>
+</div>
 
     <p class="text-xs text-gray-600 mt-4">
       Assignatures disponibles a la safata:
