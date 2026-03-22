@@ -416,6 +416,48 @@ async function handleSaveSupabaseWithName() {
   }
 }
 
+  async function handleRenameSelectedSupabaseCalendar() {
+  if (!selectedCalendarId.value) {
+    alert("No hi ha cap calendari seleccionat.");
+    return;
+  }
+
+  const selected = savedCalendars.value.find(
+    (cal) => cal.id === selectedCalendarId.value
+  );
+
+  const currentName = selected?.name ?? "";
+  const newName = prompt("Nou nom del calendari:", currentName);
+
+  if (!newName || !newName.trim()) {
+    alert("Cal indicar un nom.");
+    return;
+  }
+
+  try {
+    const updated = await remoteCalendarRepository.renameCalendar(
+      selectedCalendarId.value,
+      newName.trim()
+    );
+
+    savedCalendars.value = savedCalendars.value.map((cal) =>
+      cal.id === updated.id
+        ? {
+            ...cal,
+            name: updated.name,
+            updatedAt: updated.updatedAt,
+          }
+        : cal
+    );
+
+    alert(`Calendari reanomenat: ${updated.name}`);
+  } catch (err) {
+    console.error("Error reanomenant calendari de Supabase:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    alert(`Error reanomenant calendari de Supabase:\n\n${message}`);
+  }
+}
+
   async function handleListSupabaseCalendars() {
   try {
     const list = await remoteCalendarRepository.listCalendars();
