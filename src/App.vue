@@ -656,6 +656,8 @@ function handleExplainTemplateUse() {
   @load-selected-supabase-calendar="handleLoadSupabaseCalendar"
   @rename-selected-supabase-calendar="handleRenameSelectedSupabaseCalendar"
   @delete-selected-supabase-calendar="handleDeleteSelectedSupabaseCalendar"
+  @apply-supabase-template="handleApplySupabaseTemplateToCurrentCalendar"
+  @explain-template-use="handleExplainTemplateUse"
   @toggle-admin-mode="toggleAdminMode"
 />
 
