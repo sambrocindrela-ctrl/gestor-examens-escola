@@ -44,6 +44,28 @@ function mapRowToSummary(row: ExamCalendarsRow): CalendarSummary {
 }
 
 export const remoteCalendarRepository: CalendarRepository = {
+    async renameCalendar(id: string, newName: string): Promise<SavedCalendar> {
+    const { data, error } = await supabase
+      .from("exam_calendars")
+      .update({
+        name: newName,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select(
+        "id, name, academic_year, document_json, created_at, updated_at, created_by, updated_by"
+      )
+      .single();
+
+    if (error || !data) {
+      throw new Error(
+        `No s'ha pogut reanomenar el calendari: ${error?.message ?? "error desconegut"}`
+      );
+    }
+
+    return mapRowToSavedCalendar(data as ExamCalendarsRow);
+  },
+  
   async listCalendars(): Promise<CalendarSummary[]> {
     const { data, error } = await supabase
       .from("exam_calendars")
