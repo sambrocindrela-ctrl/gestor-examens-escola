@@ -3,7 +3,6 @@ import { addDays, differenceInCalendarDays, parseISO } from "date-fns";
 import type {
   ExamPlannerDocument,
   ExamPlannerSnapshot,
-  AssignedPerPeriod,
   AssignedMap,
   Period,
   Subject,
