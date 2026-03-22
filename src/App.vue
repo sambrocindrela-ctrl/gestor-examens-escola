@@ -18,12 +18,16 @@ import { exportGEFExcelFromTemplate } from "./utils/exportGEFExcel";
   
 import type { ImportedCalendarData } from "./utils/importExcelCalendar";
 import type { Subject, AssignedMap } from "./types/examPlanner";
+import type { CalendarSummary } from "./types/savedCalendar";
 
 import PlannerToolbar from "./components/PlannerToolbar.vue";
 import SubjectsTray from "./components/SubjectsTray.vue";
 import ExamCalendarGrid from "./components/ExamCalendarGrid.vue";
 import TrashBin from "./components/TrashBin.vue";
-import { buildPlannerDocumentFromSnapshot } from "./utils/plannerSerialization";
+import {
+  buildPlannerDocumentFromSnapshot,
+  buildSnapshotFromPlannerDocument,
+} from "./utils/plannerSerialization";
 import { remoteCalendarRepository } from "./services/remoteCalendarRepository";
 
 const {
@@ -53,6 +57,8 @@ const {
 
 const ADMIN_PASSWORD = "admin2025";
 const isAdminMode = ref(true);
+const savedCalendars = ref<CalendarSummary[]>([]);
+const selectedCalendarId = ref("");
 
 // Load admin status from sessionStorage on mount
 // Default is unlocked (true), only lock if explicitly set to false
@@ -402,6 +408,70 @@ async function handleTestSaveSupabase() {
   }
 }
 
+  async function handleListSupabaseCalendars() {
+  try {
+    const list = await remoteCalendarRepository.listCalendars();
+    savedCalendars.value = list;
+
+    if (list.length > 0) {
+      selectedCalendarId.value = list[0].id;
+    }
+
+    alert(`S'han carregat ${list.length} calendaris de Supabase.`);
+  } catch (err) {
+    console.error("Error llistant calendaris de Supabase:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    alert(`Error llistant calendaris de Supabase:\n\n${message}`);
+  }
+}
+
+async function handleLoadSupabaseCalendar(id: string) {
+  if (!id) {
+    alert("No hi ha cap calendari seleccionat.");
+    return;
+  }
+
+  try {
+    const saved = await remoteCalendarRepository.getCalendar(id);
+    const snapshot = buildSnapshotFromPlannerDocument(saved.document);
+
+    subjects.value = snapshot.subjects;
+    periods.value = snapshot.periods;
+    activePid.value = snapshot.activePid;
+    slotsPerPeriod.value = snapshot.slotsPerPeriod;
+    assignedPerPeriod.value = snapshot.assignedPerPeriod;
+    roomsData.value = snapshot.roomsData;
+    allowedPeriodsBySubject.value = snapshot.allowedPeriodsBySubject;
+    hiddenSubjectIds.value = snapshot.hiddenSubjectIds;
+
+    alert(`Calendari carregat de Supabase: ${saved.name}`);
+  } catch (err) {
+    console.error("Error carregant calendari de Supabase:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    alert(`Error carregant calendari de Supabase:\n\n${message}`);
+  }
+}
+
+async function handleLoadLatestSupabaseCalendar() {
+  try {
+    const list = await remoteCalendarRepository.listCalendars();
+
+    if (!list.length) {
+      alert("No hi ha calendaris guardats a Supabase.");
+      return;
+    }
+
+    savedCalendars.value = list;
+    selectedCalendarId.value = list[0].id;
+
+    await handleLoadSupabaseCalendar(list[0].id);
+  } catch (err) {
+    console.error("Error carregant l'últim calendari de Supabase:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    alert(`Error carregant l'últim calendari de Supabase:\n\n${message}`);
+  }
+}
+  
 </script>
 
 <template>
@@ -419,12 +489,47 @@ async function handleTestSaveSupabase() {
         . Opcional: <code class="bg-gray-100 px-1 rounded">MET,MATT,MEE,MCYBERS</code>.
       </p>
 
-      <div class="mb-4">
+<div class="mb-4 flex flex-wrap gap-3 items-center">
   <button
     class="px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-700"
     @click="handleTestSaveSupabase"
   >
     Prova guardar Supabase
+  </button>
+
+  <button
+    class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+    @click="handleListSupabaseCalendars"
+  >
+    Llistar calendaris Supabase
+  </button>
+
+  <button
+    class="px-4 py-2 rounded bg-violet-600 text-white hover:bg-violet-700"
+    @click="handleLoadLatestSupabaseCalendar"
+  >
+    Carregar últim de Supabase
+  </button>
+
+  <select
+    v-model="selectedCalendarId"
+    class="px-3 py-2 border rounded bg-white min-w-[320px]"
+  >
+    <option value="">Selecciona un calendari</option>
+    <option
+      v-for="cal in savedCalendars"
+      :key="cal.id"
+      :value="cal.id"
+    >
+      {{ cal.name }} — {{ cal.updatedAt }}
+    </option>
+  </select>
+
+  <button
+    class="px-4 py-2 rounded bg-slate-700 text-white hover:bg-slate-800"
+    @click="handleLoadSupabaseCalendar(selectedCalendarId)"
+  >
+    Carregar seleccionat
   </button>
 </div>
 
