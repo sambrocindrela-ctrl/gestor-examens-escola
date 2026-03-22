@@ -29,6 +29,7 @@ import {
   buildSnapshotFromPlannerDocument,
 } from "./utils/plannerSerialization";
 import { remoteCalendarRepository } from "./services/remoteCalendarRepository";
+import { buildNextYearCalendarFromTemplate } from "./utils/buildNextYearCalendar";
 
 const {
   subjects,
@@ -554,6 +555,54 @@ async function handleDeleteSelectedSupabaseCalendar() {
     alert(`Error eliminant calendari de Supabase:\n\n${message}`);
   }
 }  
+
+async function handleApplySupabaseTemplateToCurrentCalendar() {
+  if (!selectedCalendarId.value) {
+    alert("No hi ha cap calendari plantilla seleccionat.");
+    return;
+  }
+
+  try {
+    const templateSaved = await remoteCalendarRepository.getCalendar(
+      selectedCalendarId.value
+    );
+
+    const currentSnapshot = getSnapshot();
+
+    const nextSnapshot = buildNextYearCalendarFromTemplate(
+      templateSaved.document,
+      currentSnapshot
+    );
+
+    subjects.value = nextSnapshot.subjects;
+    periods.value = nextSnapshot.periods;
+    activePid.value = nextSnapshot.activePid;
+    slotsPerPeriod.value = nextSnapshot.slotsPerPeriod;
+    assignedPerPeriod.value = nextSnapshot.assignedPerPeriod;
+    roomsData.value = nextSnapshot.roomsData;
+    allowedPeriodsBySubject.value = nextSnapshot.allowedPeriodsBySubject;
+    hiddenSubjectIds.value = nextSnapshot.hiddenSubjectIds;
+
+    alert(
+      `S'ha aplicat la plantilla del calendari: ${templateSaved.name}`
+    );
+  } catch (err) {
+    console.error("Error aplicant plantilla de Supabase:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    alert(`Error aplicant plantilla de Supabase:\n\n${message}`);
+  }
+}
+
+function handleExplainTemplateUse() {
+  alert(
+    "Aquesta acció aplica al calendari actual la disposició d'un calendari guardat a Supabase.\n\n" +
+    "Flux recomanat:\n" +
+    "1. Importa o fes MERGE del CSV nou.\n" +
+    "2. Llista i selecciona un calendari anterior de Supabase.\n" +
+    "3. Prem 'Aplicar plantilla'.\n\n" +
+    "Les assignatures s'emparellen per CODI."
+  );
+}
   
 </script>
 
