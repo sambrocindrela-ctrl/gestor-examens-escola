@@ -572,65 +572,6 @@ async function handleDeleteSelectedSupabaseCalendar() {
         . Opcional: <code class="bg-gray-100 px-1 rounded">MET,MATT,MEE,MCYBERS</code>.
       </p>
 
-<div class="mb-4 flex flex-wrap gap-3 items-center">
-<button
-  class="px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-700"
-  @click="handleSaveSupabaseWithName"
->
-  Guardar a Supabase
-</button>
-  
-  <button
-    class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-    @click="handleListSupabaseCalendars"
-  >
-    Llistar calendaris Supabase
-  </button>
-
-  <button
-    class="px-4 py-2 rounded bg-violet-600 text-white hover:bg-violet-700"
-    @click="handleLoadLatestSupabaseCalendar"
-  >
-    Carregar últim de Supabase
-  </button>
-
-  <select
-    v-model="selectedCalendarId"
-    class="px-3 py-2 border rounded bg-white min-w-[320px]"
-  >
-    <option value="">Selecciona un calendari</option>
-    <option
-      v-for="cal in savedCalendars"
-      :key="cal.id"
-      :value="cal.id"
-    >
-      {{ cal.name }} — {{ cal.updatedAt }}
-    </option>
-  </select>
-
-  <button
-    class="px-4 py-2 rounded bg-slate-700 text-white hover:bg-slate-800"
-    @click="handleLoadSupabaseCalendar(selectedCalendarId)"
-  >
-    Carregar seleccionat
-  </button>
-
-  <button
-  class="px-4 py-2 rounded bg-amber-600 text-white hover:bg-amber-700"
-  @click="handleRenameSelectedSupabaseCalendar"
->
-  Reanomenar seleccionat
-</button>
-
-  <button
-  class="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
-  @click="handleDeleteSelectedSupabaseCalendar"
->
-  Eliminar seleccionat
-</button>
-  
-</div>
-
       <PlannerToolbar
   :availableSubjects="availableSubjects"
   :subjects="subjects"
