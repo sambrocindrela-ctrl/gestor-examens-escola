@@ -48,6 +48,8 @@ const emit = defineEmits<{
   (e: 'rename-selected-supabase-calendar'): void;
   (e: 'delete-selected-supabase-calendar'): void;
   (e: 'set-selected-calendar-id', id: string): void;
+  (e: 'apply-supabase-template'): void;
+  (e: 'explain-template-use'): void;
 
   (e: 'toggle-admin-mode', password?: string): boolean;
 }>();
@@ -332,6 +334,20 @@ function handleImportExcel(event: Event) {
     >
       Carregar seleccionat
     </button>
+
+    <button
+  @click="emit('apply-supabase-template')"
+  class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
+>
+  Aplicar plantilla
+</button>
+
+<button
+  @click="emit('explain-template-use')"
+  class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
+>
+  Com funciona
+</button>
 
     <button
       @click="emit('rename-selected-supabase-calendar')"
