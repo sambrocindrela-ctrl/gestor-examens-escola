@@ -1,4 +1,4 @@
-import { addDays, parseISO } from "date-fns";
+import { addDays, format, parseISO } from "date-fns";
 
 import type {
   ExamPlannerDocument,
@@ -34,17 +34,18 @@ function parseCellKey(cellKey: string) {
 }
 
 function toIsoDate(d: Date) {
-  return d.toISOString().slice(0, 10);
+  return format(d, "yyyy-MM-dd");
 }
 
 function buildValidExamDates(period: Period) {
   const out: string[] = [];
   const start = parseISO(period.startStr);
+  const end = parseISO(period.endStr);
   const blackouts = new Set((period.blackouts ?? []).map((d) => d.trim()));
 
   let cursor = start;
 
-  while (toIsoDate(cursor) <= period.endStr) {
+  while (cursor <= end) {
     const iso = toIsoDate(cursor);
     const day = cursor.getDay(); // 0=domingo, 6=sábado
 
