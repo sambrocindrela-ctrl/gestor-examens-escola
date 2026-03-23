@@ -40,7 +40,6 @@ function toIsoDate(d: Date) {
 function buildValidExamDates(period: Period) {
   const out: string[] = [];
   const start = parseISO(period.startStr);
-  const end = parseISO(period.endStr);
   const blackouts = new Set((period.blackouts ?? []).map((d) => d.trim()));
 
   let cursor = start;
