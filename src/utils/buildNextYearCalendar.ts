@@ -44,11 +44,18 @@ function buildValidExamDates(period: Period) {
   const blackouts = new Set((period.blackouts ?? []).map((d) => d.trim()));
 
   let cursor = start;
+
   while (toIsoDate(cursor) <= period.endStr) {
     const iso = toIsoDate(cursor);
-    if (!blackouts.has(iso)) {
+    const day = cursor.getDay(); // 0=domingo, 6=sábado
+
+    const isWeekend = day === 0 || day === 6;
+    const isBlackout = blackouts.has(iso);
+
+    if (!isWeekend && !isBlackout) {
       out.push(iso);
     }
+
     cursor = addDays(cursor, 1);
   }
 
