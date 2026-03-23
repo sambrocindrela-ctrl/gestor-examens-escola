@@ -1,4 +1,4 @@
-import { addDays, differenceInCalendarDays, parseISO } from "date-fns";
+import { addDays, parseISO } from "date-fns";
 
 import type {
   ExamPlannerDocument,
@@ -33,14 +33,36 @@ function parseCellKey(cellKey: string) {
   };
 }
 
-function getDayOffsetWithinPeriod(period: Period, dateIso: string) {
-  return differenceInCalendarDays(parseISO(dateIso), parseISO(period.startStr));
+function toIsoDate(d: Date) {
+  return d.toISOString().slice(0, 10);
 }
 
-function buildTargetDate(period: Period, dayOffset: number) {
-  return addDays(parseISO(period.startStr), dayOffset)
-    .toISOString()
-    .slice(0, 10);
+function buildValidExamDates(period: Period) {
+  const out: string[] = [];
+  const start = parseISO(period.startStr);
+  const end = parseISO(period.endStr);
+  const blackouts = new Set((period.blackouts ?? []).map((d) => d.trim()));
+
+  let cursor = start;
+  while (toIsoDate(cursor) <= period.endStr) {
+    const iso = toIsoDate(cursor);
+    if (!blackouts.has(iso)) {
+      out.push(iso);
+    }
+    cursor = addDays(cursor, 1);
+  }
+
+  return out;
+}
+
+function getValidExamDayIndex(period: Period, dateIso: string) {
+  const validDates = buildValidExamDates(period);
+  return validDates.indexOf(dateIso);
+}
+
+function getValidExamDateByIndex(period: Period, index: number) {
+  const validDates = buildValidExamDates(period);
+  return index >= 0 && index < validDates.length ? validDates[index] : undefined;
 }
 
 export function buildNextYearCalendarFromTemplate(
@@ -82,11 +104,12 @@ export function buildNextYearCalendarFromTemplate(
       if (slotIndex < 0 || slotIndex >= targetSlots.length) {
         continue;
       }
+      
+      const validDayIndex = getValidExamDayIndex(prevPeriod, dateIso);
+      if (validDayIndex < 0) continue;
 
-      const dayOffset = getDayOffsetWithinPeriod(prevPeriod, dateIso);
-      if (dayOffset < 0) continue;
-
-      const targetDateIso = buildTargetDate(targetPeriod, dayOffset);
+      const targetDateIso = getValidExamDateByIndex(targetPeriod, validDayIndex);
+      if (!targetDateIso) continue;
 
       const targetCellKey = `${targetDateIso}|${slotIndex}`;
 
