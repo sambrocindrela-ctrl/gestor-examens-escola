@@ -14,6 +14,8 @@ const props = defineProps<{
 
   savedCalendars: CalendarSummary[];
   selectedCalendarId: string;
+  selectedTitulacio: string;
+  titulacionsDisponibles: string[];
 }>();
 
 const emit = defineEmits<{
@@ -48,6 +50,7 @@ const emit = defineEmits<{
   (e: 'rename-selected-supabase-calendar'): void;
   (e: 'delete-selected-supabase-calendar'): void;
   (e: 'set-selected-calendar-id', id: string): void;
+  (e: 'set-selected-titulacio', value: string): void;
   (e: 'apply-supabase-template'): void;
   (e: 'explain-template-use'): void;
 
@@ -292,6 +295,21 @@ function handleImportExcel(event: Event) {
   </h3>
 
   <div class="flex flex-wrap gap-3 items-center">
+        <select
+      :value="selectedTitulacio"
+      @change="emit('set-selected-titulacio', ($event.target as HTMLSelectElement).value)"
+      class="px-3 py-2 border rounded bg-white min-w-[220px]"
+    >
+      <option value="">Totes les titulacions</option>
+      <option
+        v-for="tit in titulacionsDisponibles"
+        :key="tit"
+        :value="tit"
+      >
+        {{ tit }}
+      </option>
+    </select>
+    
     <button
       @click="emit('save-supabase')"
       class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
