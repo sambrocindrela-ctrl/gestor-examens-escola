@@ -514,13 +514,6 @@ async function handleListSupabaseCalendars() {
       selectedCalendarId.value = "";
     }
 
-    const titSet = new Set(
-      list
-        .map((c) => c.titulacio)
-        .filter((v): v is string => Boolean(v && v.trim()))
-    );
-    titulacionsDisponibles.value = Array.from(titSet).sort();
-
     alert(`S'han carregat ${list.length} calendaris de Supabase.`);
   } catch (err) {
     console.error("Error llistant calendaris de Supabase:", err);
