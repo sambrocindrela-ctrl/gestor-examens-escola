@@ -4,6 +4,7 @@ export interface SavedCalendar {
   id: string;
   name: string;
   academicYear?: string;
+  titulacio?: string;
   createdAt: string;
   updatedAt: string;
   createdBy?: string;
@@ -15,6 +16,7 @@ export interface CalendarSummary {
   id: string;
   name: string;
   academicYear?: string;
+  titulacio?: string;
   createdAt: string;
   updatedAt: string;
   createdBy?: string;
