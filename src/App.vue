@@ -60,6 +60,9 @@ const ADMIN_PASSWORD = "admin2025";
 const isAdminMode = ref(true);
 const savedCalendars = ref<CalendarSummary[]>([]);
 const selectedCalendarId = ref("");
+const selectedTitulacio = ref("");
+const titulacionsDisponibles = ref<string[]>([]);
+
 
 // Load admin status from sessionStorage on mount
 // Default is unlocked (true), only lock if explicitly set to false
@@ -394,9 +397,14 @@ function handleImportExcelCalendar(data: ImportedCalendarData) {
 async function handleSaveSupabaseWithName() {
   try {
     const name = prompt("Nom del calendari:");
-
     if (!name || !name.trim()) {
       alert("Cal indicar un nom.");
+      return;
+    }
+
+    const titulacio = prompt("Titulació del calendari:", selectedTitulacio.value || "");
+    if (!titulacio || !titulacio.trim()) {
+      alert("Cal indicar una titulació.");
       return;
     }
 
@@ -405,9 +413,12 @@ async function handleSaveSupabaseWithName() {
 
     const saved = await remoteCalendarRepository.createCalendar({
       name: name.trim(),
-      academicYear: "",
+      academicYear: undefined,
+      titulacio: titulacio.trim(),
       document,
     });
+
+    selectedTitulacio.value = titulacio.trim();
 
     alert(`Calendari guardat: ${saved.name}`);
   } catch (err) {
@@ -416,6 +427,7 @@ async function handleSaveSupabaseWithName() {
     alert(`Error guardant a Supabase:\n\n${message}`);
   }
 }
+
 
   async function handleRenameSelectedSupabaseCalendar() {
   if (!selectedCalendarId.value) {
@@ -459,14 +471,26 @@ async function handleSaveSupabaseWithName() {
   }
 }
 
-  async function handleListSupabaseCalendars() {
+async function handleListSupabaseCalendars() {
   try {
-    const list = await remoteCalendarRepository.listCalendars();
+    const list = await remoteCalendarRepository.listCalendars(
+      selectedTitulacio.value || undefined
+    );
+
     savedCalendars.value = list;
 
     if (list.length > 0) {
       selectedCalendarId.value = list[0].id;
+    } else {
+      selectedCalendarId.value = "";
     }
+
+    const titSet = new Set(
+      list
+        .map((c) => c.titulacio)
+        .filter((v): v is string => Boolean(v && v.trim()))
+    );
+    titulacionsDisponibles.value = Array.from(titSet).sort();
 
     alert(`S'han carregat ${list.length} calendaris de Supabase.`);
   } catch (err) {
@@ -474,6 +498,10 @@ async function handleSaveSupabaseWithName() {
     const message = err instanceof Error ? err.message : String(err);
     alert(`Error llistant calendaris de Supabase:\n\n${message}`);
   }
+}
+
+async function handleSetSelectedTitulacio(value: string) {
+  selectedTitulacio.value = value;
 }
 
 async function handleLoadSupabaseCalendar(id: string) {
