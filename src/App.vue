@@ -682,6 +682,7 @@ function handleExplainTemplateUse() {
   :selectedCalendarId="selectedCalendarId"
   :selectedTitulacio="selectedTitulacio"
   :titulacionsDisponibles="titulacionsDisponibles"
+  :isTitulacioLocked="isTitulacioLocked"
   @undo-delete="undoDelete"
   @set-last-deleted="(val) => (lastDeleted = val)"
   @set-active-pid="(id) => (activePid = id)"
