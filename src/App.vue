@@ -62,7 +62,17 @@ const savedCalendars = ref<CalendarSummary[]>([]);
 const selectedCalendarId = ref("");
 const selectedTitulacio = ref("");
 const titulacionsDisponibles = ref<string[]>([]);
+const isTitulacioLocked = ref(false);
 
+function loadTitulacioFromUrl() {
+  const url = new URL(window.location.href);
+  const titulacioFromUrl = url.searchParams.get("titulacio");
+
+  if (titulacioFromUrl && titulacioFromUrl.trim()) {
+    selectedTitulacio.value = titulacioFromUrl.trim();
+    isTitulacioLocked.value = true;
+  }
+}
 
 // Load admin status from sessionStorage on mount
 // Default is unlocked (true), only lock if explicitly set to false
@@ -71,6 +81,12 @@ onMounted(() => {
   if (savedAdminStatus === "false") {
     isAdminMode.value = false;
   }
+    loadTitulacioFromUrl();
+
+  if (selectedTitulacio.value) {
+    handleListSupabaseCalendars();
+  }
+  
   // Otherwise, keep default unlocked state (true)
 });
 
@@ -402,10 +418,16 @@ async function handleSaveSupabaseWithName() {
       return;
     }
 
-    const titulacio = prompt("Titulació del calendari:", selectedTitulacio.value || "");
-    if (!titulacio || !titulacio.trim()) {
-      alert("Cal indicar una titulació.");
-      return;
+    let titulacioToSave = selectedTitulacio.value?.trim();
+
+    if (!titulacioToSave) {
+      const titulacioPrompt = prompt("Titulació del calendari:");
+      if (!titulacioPrompt || !titulacioPrompt.trim()) {
+        alert("Cal indicar una titulació.");
+        return;
+      }
+      titulacioToSave = titulacioPrompt.trim();
+      selectedTitulacio.value = titulacioToSave;
     }
 
     const snapshot = getSnapshot();
@@ -414,11 +436,9 @@ async function handleSaveSupabaseWithName() {
     const saved = await remoteCalendarRepository.createCalendar({
       name: name.trim(),
       academicYear: undefined,
-      titulacio: titulacio.trim(),
+      titulacio: titulacioToSave,
       document,
     });
-
-    selectedTitulacio.value = titulacio.trim();
 
     alert(`Calendari guardat: ${saved.name}`);
   } catch (err) {
@@ -427,7 +447,6 @@ async function handleSaveSupabaseWithName() {
     alert(`Error guardant a Supabase:\n\n${message}`);
   }
 }
-
 
   async function handleRenameSelectedSupabaseCalendar() {
   if (!selectedCalendarId.value) {
