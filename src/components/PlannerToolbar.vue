@@ -16,6 +16,7 @@ const props = defineProps<{
   selectedCalendarId: string;
   selectedTitulacio: string;
   titulacionsDisponibles: string[];
+  isTitulacioLocked: boolean;
 }>();
 
 const emit = defineEmits<{
