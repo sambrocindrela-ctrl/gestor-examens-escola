@@ -11,6 +11,7 @@ type ExamCalendarsRow = {
   id: string;
   name: string;
   academic_year: string | null;
+  titulacio: string | null;
   document_json: ExamPlannerDocument;
   created_at: string;
   updated_at: string;
@@ -23,6 +24,7 @@ function mapRowToSavedCalendar(row: ExamCalendarsRow): SavedCalendar {
     id: row.id,
     name: row.name,
     academicYear: row.academic_year ?? undefined,
+    titulacio: row.titulacio ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     createdBy: row.created_by ?? undefined,
@@ -36,6 +38,7 @@ function mapRowToSummary(row: ExamCalendarsRow): CalendarSummary {
     id: row.id,
     name: row.name,
     academicYear: row.academic_year ?? undefined,
+    titulacio: row.titulacio ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     createdBy: row.created_by ?? undefined,
@@ -52,9 +55,7 @@ export const remoteCalendarRepository: CalendarRepository = {
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)
-      .select(
-        "id, name, academic_year, document_json, created_at, updated_at, created_by, updated_by"
-      )
+      .select("id, name, academic_year, titulacio, document_json, created_at, updated_at, created_by, updated_by")
       .single();
 
     if (error || !data) {
@@ -66,11 +67,19 @@ export const remoteCalendarRepository: CalendarRepository = {
     return mapRowToSavedCalendar(data as ExamCalendarsRow);
   },
   
-  async listCalendars(): Promise<CalendarSummary[]> {
-    const { data, error } = await supabase
+  async listCalendars(titulacio?: string): Promise<CalendarSummary[]> {
+    let query = supabase
       .from("exam_calendars")
-      .select("id, name, academic_year, document_json, created_at, updated_at, created_by, updated_by")
+      .select(
+        "id, name, academic_year, titulacio, document_json, created_at, updated_at, created_by, updated_by"
+      )
       .order("updated_at", { ascending: false });
+
+    if (titulacio && titulacio.trim()) {
+      query = query.eq("titulacio", titulacio.trim());
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       throw new Error(`No s'han pogut carregar els calendaris: ${error.message}`);
@@ -79,10 +88,11 @@ export const remoteCalendarRepository: CalendarRepository = {
     return (data ?? []).map((row) => mapRowToSummary(row as ExamCalendarsRow));
   },
 
+
   async getCalendar(id: string): Promise<SavedCalendar> {
     const { data, error } = await supabase
       .from("exam_calendars")
-      .select("id, name, academic_year, document_json, created_at, updated_at, created_by, updated_by")
+      .select("id, name, academic_year, titulacio, document_json, created_at, updated_at, created_by, updated_by")
       .eq("id", id)
       .single();
 
@@ -93,30 +103,36 @@ export const remoteCalendarRepository: CalendarRepository = {
     return mapRowToSavedCalendar(data as ExamCalendarsRow);
   },
 
-  async createCalendar(input: CreateCalendarInput): Promise<SavedCalendar> {
+ async createCalendar(input: CreateCalendarInput): Promise<SavedCalendar> {
     const payload = {
       name: input.name,
       academic_year: input.academicYear ?? null,
+      titulacio: input.titulacio ?? null,
       document_json: input.document,
     };
 
     const { data, error } = await supabase
       .from("exam_calendars")
       .insert(payload)
-      .select("id, name, academic_year, document_json, created_at, updated_at, created_by, updated_by")
+      .select(
+        "id, name, academic_year, titulacio, document_json, created_at, updated_at, created_by, updated_by"
+      )
       .single();
 
     if (error || !data) {
-      throw new Error(`No s'ha pogut crear el calendari: ${error?.message ?? "error desconegut"}`);
+      throw new Error(
+        `No s'ha pogut crear el calendari: ${error?.message ?? "error desconegut"}`
+      );
     }
 
     return mapRowToSavedCalendar(data as ExamCalendarsRow);
   },
 
-  async updateCalendar(input: UpdateCalendarInput): Promise<SavedCalendar> {
+ async updateCalendar(input: UpdateCalendarInput): Promise<SavedCalendar> {
     const payload = {
       name: input.name,
       academic_year: input.academicYear ?? null,
+      titulacio: input.titulacio ?? null,
       document_json: input.document,
       updated_at: new Date().toISOString(),
     };
@@ -125,15 +141,20 @@ export const remoteCalendarRepository: CalendarRepository = {
       .from("exam_calendars")
       .update(payload)
       .eq("id", input.id)
-      .select("id, name, academic_year, document_json, created_at, updated_at, created_by, updated_by")
+      .select(
+        "id, name, academic_year, titulacio, document_json, created_at, updated_at, created_by, updated_by"
+      )
       .single();
 
     if (error || !data) {
-      throw new Error(`No s'ha pogut actualitzar el calendari: ${error?.message ?? "error desconegut"}`);
+      throw new Error(
+        `No s'ha pogut actualitzar el calendari: ${error?.message ?? "error desconegut"}`
+      );
     }
 
     return mapRowToSavedCalendar(data as ExamCalendarsRow);
   },
+
 
   async deleteCalendar(id: string): Promise<void> {
     const { error } = await supabase
@@ -152,7 +173,9 @@ export const remoteCalendarRepository: CalendarRepository = {
     return this.createCalendar({
       name: newName,
       academicYear: existing.academicYear,
+      titulacio: existing.titulacio,
       document: existing.document,
     });
   },
+
 };
