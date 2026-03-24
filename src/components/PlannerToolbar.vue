@@ -295,20 +295,23 @@ function handleImportExcel(event: Event) {
   </h3>
 
   <div class="flex flex-wrap gap-3 items-center">
-        <select
-      :value="selectedTitulacio"
-      @change="emit('set-selected-titulacio', ($event.target as HTMLSelectElement).value)"
-      class="px-3 py-2 border rounded bg-white min-w-[220px]"
-    >
-      <option value="">Totes les titulacions</option>
-      <option
-        v-for="tit in titulacionsDisponibles"
-        :key="tit"
-        :value="tit"
-      >
-        {{ tit }}
-      </option>
-    </select>
+<select
+  :value="selectedTitulacio"
+  :disabled="isTitulacioLocked"
+  @change="emit('set-selected-titulacio', ($event.target as HTMLSelectElement).value)"
+  class="px-3 py-2 border rounded bg-white min-w-[220px]"
+  :class="isTitulacioLocked ? 'opacity-60 cursor-not-allowed bg-gray-100' : ''"
+>
+  <option value="">Totes les titulacions</option>
+  <option
+    v-for="tit in titulacionsDisponibles"
+    :key="tit"
+    :value="tit"
+  >
+    {{ tit }}
+  </option>
+</select>
+
     
     <button
       @click="emit('save-supabase')"
