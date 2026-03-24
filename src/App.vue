@@ -57,7 +57,7 @@ const {
 /* --- Admin Mode / Password Protection --- */
 
 const ADMIN_PASSWORD = "admin2025";
-const isAdminMode = ref(true);
+const isAdminMode = ref(false);
 const savedCalendars = ref<CalendarSummary[]>([]);
 const selectedCalendarId = ref("");
 const selectedTitulacio = ref("");
