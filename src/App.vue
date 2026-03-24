@@ -61,7 +61,17 @@ const isAdminMode = ref(true);
 const savedCalendars = ref<CalendarSummary[]>([]);
 const selectedCalendarId = ref("");
 const selectedTitulacio = ref("");
-const titulacionsDisponibles = ref<string[]>([]);
+const TITULACIONS = [
+  "GEF",
+  "GREELEC",
+  "GRETST",
+  "MastersTIC",
+  "MEF",
+  "MSEMD"
+];
+
+const titulacionsDisponibles = ref<string[]>(TITULACIONS);
+
 const isTitulacioLocked = ref(false);
 
 function loadTitulacioFromUrl() {
