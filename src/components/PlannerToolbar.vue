@@ -227,20 +227,13 @@ function handleImportExcel(event: Event) {
 </option>
 </select>
 
-<button
-  @click="emit('list-supabase-calendars')"
-  class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
->
-  Llistar calendaris
-</button>
-
-<button
-  @click="emit('load-selected-supabase-calendar', selectedCalendarId)"
-  class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
->
-  Carregar seleccionat
-</button>
-
+  <button
+    @click="emit('load-latest-supabase-calendar')"
+    class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
+  >
+    Carregar últim
+  </button>
+  
 <button
   @click="emit('save-supabase')"
   class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"

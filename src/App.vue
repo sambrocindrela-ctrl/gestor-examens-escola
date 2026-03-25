@@ -74,6 +74,8 @@ const titulacionsDisponibles = ref<string[]>(TITULACIONS);
 
 const isTitulacioLocked = ref(false);
 
+const lastSavedOrLoadedDocumentJson = ref("");
+
 function loadTitulacioFromUrl() {
   const url = new URL(window.location.href);
   const titulacioFromUrl = url.searchParams.get("titulacio");
@@ -84,20 +86,20 @@ function loadTitulacioFromUrl() {
   }
 }
 
-// Load admin status from sessionStorage on mount
-// Default is unlocked (true), only lock if explicitly set to false
+// Initialize admin mode, titulació from URL and change detection baseline
 onMounted(() => {
   const savedAdminStatus = sessionStorage.getItem("isAdminMode");
   if (savedAdminStatus === "false") {
     isAdminMode.value = false;
   }
-    loadTitulacioFromUrl();
+
+  loadTitulacioFromUrl();
 
   if (selectedTitulacio.value) {
-    handleListSupabaseCalendars();
+    handleListSupabaseCalendars(true);
   }
-  
-  // Otherwise, keep default unlocked state (true)
+
+  refreshBaselineFromCurrent();
 });
 
 function toggleAdminMode(password?: string) {
@@ -419,13 +421,75 @@ function handleImportExcelCalendar(data: ImportedCalendarData) {
     activePid.value = data.periods[0].id;
   }
 }
+
+function getCurrentDocumentJson() {
+  const snapshot = getSnapshot();
+  const document = buildPlannerDocumentFromSnapshot(snapshot);
+  return JSON.stringify(document);
+}
+
+function refreshBaselineFromCurrent() {
+  lastSavedOrLoadedDocumentJson.value = getCurrentDocumentJson();
+}
+
+function hasUnsavedChanges() {
+  return getCurrentDocumentJson() !== lastSavedOrLoadedDocumentJson.value;
+}
   
+async function maybeSaveBeforeChangingCalendar() {
+  if (!hasUnsavedChanges()) return true;
+
+  const shouldSave = confirm("Vols guardar canvis abans de canviar de calendari?");
+  if (!shouldSave) return true;
+
+  const saved = await handleSaveSupabaseWithName();
+  return Boolean(saved);
+}
+
+async function performLoadSupabaseCalendar(id: string) {
+  const saved = await remoteCalendarRepository.getCalendar(id);
+  const snapshot = buildSnapshotFromPlannerDocument(saved.document);
+
+  subjects.value = snapshot.subjects;
+  periods.value = snapshot.periods;
+  activePid.value = snapshot.activePid;
+  slotsPerPeriod.value = snapshot.slotsPerPeriod;
+  assignedPerPeriod.value = snapshot.assignedPerPeriod;
+  roomsData.value = snapshot.roomsData;
+  allowedPeriodsBySubject.value = snapshot.allowedPeriodsBySubject;
+  hiddenSubjectIds.value = snapshot.hiddenSubjectIds;
+
+  selectedCalendarId.value = saved.id;
+  refreshBaselineFromCurrent();
+
+  return saved;
+}
+
+async function handleSelectedCalendarChange(id: string) {
+  if (!id) {
+    selectedCalendarId.value = "";
+    return;
+  }
+
+  if (id === selectedCalendarId.value) return;
+
+  const canContinue = await maybeSaveBeforeChangingCalendar();
+  if (!canContinue) return;
+
+  try {
+    await performLoadSupabaseCalendar(id);
+  } catch (err) {
+    console.error("Error carregant calendari de Supabase:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    alert(`Error carregant calendari de Supabase:\n\n${message}`);
+  }
+}
+
 async function handleSaveSupabaseWithName() {
   try {
     const name = prompt("Nom del calendari:");
     if (!name || !name.trim()) {
-      alert("Cal indicar un nom.");
-      return;
+      return null;
     }
 
     let titulacioToSave = selectedTitulacio.value?.trim();
@@ -433,8 +497,7 @@ async function handleSaveSupabaseWithName() {
     if (!titulacioToSave) {
       const titulacioPrompt = prompt("Titulació del calendari:");
       if (!titulacioPrompt || !titulacioPrompt.trim()) {
-        alert("Cal indicar una titulació.");
-        return;
+        return null;
       }
       titulacioToSave = titulacioPrompt.trim();
       selectedTitulacio.value = titulacioToSave;
@@ -450,12 +513,52 @@ async function handleSaveSupabaseWithName() {
       document,
     });
 
+    selectedCalendarId.value = saved.id;
+    refreshBaselineFromCurrent();
+
+    await handleListSupabaseCalendars(true);
+
     alert(`Calendari guardat: ${saved.name}`);
+    return saved;
   } catch (err) {
     console.error("Error guardant a Supabase:", err);
     const message = err instanceof Error ? err.message : String(err);
     alert(`Error guardant a Supabase:\n\n${message}`);
+    return null;
   }
+}
+
+async function handleListSupabaseCalendars(silent = false) {
+  try {
+    const list = await remoteCalendarRepository.listCalendars(
+      selectedTitulacio.value || undefined
+    );
+
+    savedCalendars.value = list;
+
+    if (!list.some((c) => c.id === selectedCalendarId.value)) {
+      selectedCalendarId.value = "";
+    }
+
+    if (!silent) {
+      alert(`S'han carregat ${list.length} calendaris de Supabase.`);
+    }
+
+    return list;
+  } catch (err) {
+    console.error("Error llistant calendaris de Supabase:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    alert(`Error llistant calendaris de Supabase:\n\n${message}`);
+    return [];
+  }
+}
+
+async function handleSetSelectedTitulacio(value: string) {
+  if (isTitulacioLocked.value) return;
+
+  selectedTitulacio.value = value;
+  selectedCalendarId.value = "";
+  await handleListSupabaseCalendars(true);
 }
 
   async function handleRenameSelectedSupabaseCalendar() {
@@ -500,62 +603,26 @@ async function handleSaveSupabaseWithName() {
   }
 }
 
-async function handleListSupabaseCalendars() {
-  try {
-    const list = await remoteCalendarRepository.listCalendars(
-      selectedTitulacio.value || undefined
-    );
-
-    savedCalendars.value = list;
-
-    if (list.length > 0) {
-      selectedCalendarId.value = list[0].id;
-    } else {
-      selectedCalendarId.value = "";
-    }
-
-    alert(`S'han carregat ${list.length} calendaris de Supabase.`);
-  } catch (err) {
-    console.error("Error llistant calendaris de Supabase:", err);
-    const message = err instanceof Error ? err.message : String(err);
-    alert(`Error llistant calendaris de Supabase:\n\n${message}`);
-  }
-}
-
-async function handleSetSelectedTitulacio(value: string) {
-  selectedTitulacio.value = value;
-}
-
 async function handleLoadSupabaseCalendar(id: string) {
-  if (!id) {
-    alert("No hi ha cap calendari seleccionat.");
-    return;
-  }
+ if (!id) {
+   alert("No hi ha cap calendari seleccionat.");
+   return;
+ }
 
-  try {
-    const saved = await remoteCalendarRepository.getCalendar(id);
-    const snapshot = buildSnapshotFromPlannerDocument(saved.document);
-
-    subjects.value = snapshot.subjects;
-    periods.value = snapshot.periods;
-    activePid.value = snapshot.activePid;
-    slotsPerPeriod.value = snapshot.slotsPerPeriod;
-    assignedPerPeriod.value = snapshot.assignedPerPeriod;
-    roomsData.value = snapshot.roomsData;
-    allowedPeriodsBySubject.value = snapshot.allowedPeriodsBySubject;
-    hiddenSubjectIds.value = snapshot.hiddenSubjectIds;
-
-    alert(`Calendari carregat de Supabase: ${saved.name}`);
-  } catch (err) {
-    console.error("Error carregant calendari de Supabase:", err);
-    const message = err instanceof Error ? err.message : String(err);
-    alert(`Error carregant calendari de Supabase:\n\n${message}`);
-  }
+ try {
+   const saved = await performLoadSupabaseCalendar(id);
+   alert(`Calendari carregat de Supabase: ${saved.name}`);
+ } catch (err) {
+   console.error("Error carregant calendari de Supabase:", err);
+   const message = err instanceof Error ? err.message : String(err);
+   alert(`Error carregant calendari de Supabase:\n\n${message}`);
+ }
 }
+
 
 async function handleLoadLatestSupabaseCalendar() {
   try {
-    const list = await remoteCalendarRepository.listCalendars();
+    const list = await remoteCalendarRepository.listCalendars(selectedTitulacio.value || undefined);
 
     if (!list.length) {
       alert("No hi ha calendaris guardats a Supabase.");
@@ -679,7 +746,7 @@ function handleExplainTemplateUse() {
   @undo-delete="undoDelete"
   @set-last-deleted="(val) => (lastDeleted = val)"
   @set-active-pid="(id) => (activePid = id)"
-  @set-selected-calendar-id="(id) => (selectedCalendarId = id)"
+  @set-selected-calendar-id="handleSelectedCalendarChange"
   @set-selected-titulacio="handleSetSelectedTitulacio"
   @add-period="addPeriod"
   @remove-period="removePeriod"
