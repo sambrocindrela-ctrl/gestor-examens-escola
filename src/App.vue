@@ -663,13 +663,6 @@ function handleExplainTemplateUse() {
       <h1 class="text-2xl font-bold mb-2">
         Planificador d'exàmens — períodes amb curs/quadrimestre
       </h1>
-      <p class="text-sm mb-6">
-        CSV esperat (assignatures/períodes):
-        <code class="bg-gray-100 px-1 rounded">
-          codi,sigles,nivell,curs,quadrimestre,period_id,period_tipus,period_inici,period_fi,period_slots,period_blackouts
-        </code>
-        . Opcional: <code class="bg-gray-100 px-1 rounded">MET,MATT,MEE,MCYBERS</code>.
-      </p>
 
       <PlannerToolbar
   :availableSubjects="availableSubjects"
