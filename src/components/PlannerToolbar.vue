@@ -284,6 +284,14 @@ function handleImportExcel(event: Event) {
           <h4 class="text-sm font-semibold text-gray-700 mb-3">
             🔒 Administració d'importació i exportació tècnica
           </h4>
+          
+          <p class="text-sm text-gray-600 mb-3">
+  CSV esperat (assignatures/períodes):
+  <code class="bg-gray-100 px-1 rounded">
+    codi,sigles,nivell,curs,quadrimestre,period_id,period_tipus,period_inici,period_fi,period_slots,period_blackouts
+  </code>
+  . Opcional: <code class="bg-gray-100 px-1 rounded">MET,MATT,MEE,MCYBERS</code>.
+</p>
 
           <div class="flex flex-wrap gap-3 items-center">
             <label 
