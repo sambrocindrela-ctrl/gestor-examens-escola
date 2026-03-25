@@ -218,13 +218,13 @@ function handleImportExcel(event: Event) {
   class="px-3 py-2 border rounded bg-white min-w-[320px]"
 >
   <option value="">Selecciona un calendari</option>
-  <option
-    v-for="cal in savedCalendars"
-    :key="cal.id"
-    :value="cal.id"
-  >
-    {{ cal.name }} — {{ cal.updatedAt }}
-  </option>
+<option
+  v-for="cal in savedCalendars"
+  :key="cal.id"
+  :value="cal.id"
+>
+  {{ cal.name }}
+</option>
 </select>
 
 <button
