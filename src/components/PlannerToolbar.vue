@@ -189,85 +189,78 @@ function handleImportExcel(event: Event) {
 
       <div class="flex flex-wrap gap-3 items-center">
         <select
-          :value="selectedTitulacio"
-          :disabled="props.isTitulacioLocked"
-          @change="emit('set-selected-titulacio', ($event.target as HTMLSelectElement).value)"
-          class="px-3 py-2 border rounded bg-white min-w-[220px]"
-          :class="props.isTitulacioLocked ? 'opacity-60 cursor-not-allowed bg-gray-100' : ''"
-        >
-          <option value="">Totes les titulacions</option>
-          <option
-            v-for="tit in titulacionsDisponibles"
-            :key="tit"
-            :value="tit"
-          >
-            {{ tit }}
-          </option>
-        </select>
+  :value="selectedTitulacio"
+  :disabled="props.isTitulacioLocked"
+  @change="emit('set-selected-titulacio', ($event.target as HTMLSelectElement).value)"
+  class="px-3 py-2 border rounded bg-white min-w-[220px]"
+  :class="props.isTitulacioLocked ? 'opacity-60 cursor-not-allowed bg-gray-100' : ''"
+>
+  <option value="">Totes les titulacions</option>
+  <option
+    v-for="tit in titulacionsDisponibles"
+    :key="tit"
+    :value="tit"
+  >
+    {{ tit }}
+  </option>
+</select>
 
-        <span
-          v-if="props.isTitulacioLocked"
-          class="text-xs text-gray-600"
-        >
-          Titulació fixada per l'enllaç
-        </span>
+<span
+  v-if="props.isTitulacioLocked"
+  class="text-xs text-gray-600"
+>
+  Titulació fixada per l'enllaç
+</span>
 
-        <button
-          @click="emit('save-supabase')"
-          class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
-        >
-          Guardar a Supabase
-        </button>
+<select
+  :value="selectedCalendarId"
+  @change="emit('set-selected-calendar-id', ($event.target as HTMLSelectElement).value)"
+  class="px-3 py-2 border rounded bg-white min-w-[320px]"
+>
+  <option value="">Selecciona un calendari</option>
+  <option
+    v-for="cal in savedCalendars"
+    :key="cal.id"
+    :value="cal.id"
+  >
+    {{ cal.name }} — {{ cal.updatedAt }}
+  </option>
+</select>
 
-        <button
-          @click="emit('list-supabase-calendars')"
-          class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
-        >
-          Llistar calendaris
-        </button>
+<button
+  @click="emit('list-supabase-calendars')"
+  class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
+>
+  Llistar calendaris
+</button>
 
-        <button
-          @click="emit('load-latest-supabase-calendar')"
-          class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
-        >
-          Carregar últim
-        </button>
+<button
+  @click="emit('load-selected-supabase-calendar', selectedCalendarId)"
+  class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
+>
+  Carregar seleccionat
+</button>
 
-        <select
-          :value="selectedCalendarId"
-          @change="emit('set-selected-calendar-id', ($event.target as HTMLSelectElement).value)"
-          class="px-3 py-2 border rounded bg-white min-w-[320px]"
-        >
-          <option value="">Selecciona un calendari</option>
-          <option
-            v-for="cal in savedCalendars"
-            :key="cal.id"
-            :value="cal.id"
-          >
-            {{ cal.name }} — {{ cal.updatedAt }}
-          </option>
-        </select>
+<button
+  @click="emit('save-supabase')"
+  class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
+>
+  Guardar a Supabase
+</button>
 
-        <button
-          @click="emit('load-selected-supabase-calendar', selectedCalendarId)"
-          class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
-        >
-          Carregar seleccionat
-        </button>
+<button
+  @click="emit('rename-selected-supabase-calendar')"
+  class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
+>
+  Reanomenar seleccionat
+</button>
 
-        <button
-          @click="emit('rename-selected-supabase-calendar')"
-          class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
-        >
-          Reanomenar seleccionat
-        </button>
-
-        <button
-          @click="emit('delete-selected-supabase-calendar')"
-          class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
-        >
-          Eliminar seleccionat
-        </button>
+<button
+  @click="emit('delete-selected-supabase-calendar')"
+  class="px-3 py-2 border rounded-xl shadow-sm bg-white hover:bg-gray-50"
+>
+  Eliminar seleccionat
+</button>
       </div>
     </div>
 
