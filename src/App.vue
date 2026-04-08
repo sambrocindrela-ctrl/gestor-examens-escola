@@ -652,6 +652,17 @@ async function handleDeleteSelectedSupabaseCalendar() {
 
   const label = selected?.name ?? selectedCalendarId.value;
 
+    // 🔒 Protección de calendarios BASE_ y DEF_
+  if (selected) {
+    const prefixesProtegits = ["BASE_", "DEF_"];
+    const name = selected.name.toUpperCase();
+
+    if (prefixesProtegits.some(p => name.startsWith(p))) {
+      alert("Aquest calendari està protegit i no es pot eliminar.");
+      return;
+    }
+  }
+
   if (!confirm(`Segur que vols eliminar aquest calendari?\n\n${label}`)) {
     return;
   }
