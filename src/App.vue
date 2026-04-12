@@ -41,10 +41,17 @@ const {
   roomsData,
   allowedPeriodsBySubject,
   hiddenSubjectIds,
+  unscheduledBucketByPeriod,
   lastDeleted,
+
+  pendingSubjects,
+  noExamSubjects,
+  clipboardSubjects,
 
   getSnapshot,
   
+  initializeSubjectAsPending,
+
   addPeriod,
   removePeriod,
   deleteSubjectPermanently,
@@ -53,6 +60,7 @@ const {
   loadStateFromUrl,
   copyLinkToClipboard,
 } = useExamPlannerState();
+
 
 /* --- Admin Mode / Password Protection --- */
 
@@ -158,6 +166,38 @@ const availableSubjects = computed(() => {
       return pquad ? s.quadrimestre === pquad : true;
     });
 });
+
+function syncUnscheduledBucketsForAllPeriods() {
+  for (const period of periods.value) {
+    const pid = period.id;
+    const amap = assignedPerPeriod.value[pid] ?? {};
+    const used = new Set<string>();
+
+    for (const ids of Object.values(amap)) {
+      for (const id of ids) used.add(id);
+    }
+
+    const pcurs = period.curs != null ? String(period.curs) : undefined;
+    const pquad = period.quad;
+
+    for (const s of subjects.value) {
+      if (used.has(s.id)) continue;
+      if (hiddenSubjectIds.value.includes(s.id)) continue;
+      if (pcurs ? s.curs !== pcurs : false) continue;
+
+      const allowed = allowedPeriodsBySubject.value[s.id];
+      const fitsPeriod = Array.isArray(allowed)
+        ? allowed.includes(pid)
+        : pquad
+          ? s.quadrimestre === pquad
+          : true;
+
+      if (!fitsPeriod) continue;
+
+      initializeSubjectAsPending(pid, s.id);
+    }
+  }
+}
 
 /* --- Handlers --- */
 
@@ -299,13 +339,17 @@ function handleImportCSV(ev: Event) {
           roomsData.value = {};
           allowedPeriodsBySubject.value = nextAllowed;
           hiddenSubjectIds.value = [];
+          unscheduledBucketByPeriod.value = {};
           activePid.value = list[0].id;
+          syncUnscheduledBucketsForAllPeriods();
           alert(`Importades ${uniqueSubjects.length} assignatures i ${list.length} períodes del CSV.`);
         } else {
           allowedPeriodsBySubject.value = nextAllowed;
           hiddenSubjectIds.value = [];
+          syncUnscheduledBucketsForAllPeriods();
           alert(`Importades ${uniqueSubjects.length} assignatures del CSV.`);
         }
+
       } catch (err) {
         console.error(err);
         alert("Error processant el CSV");
@@ -352,6 +396,7 @@ function handleMergeSubjectsCSV(ev: Event) {
         slotsPerPeriod.value = nextSlotsPerPeriod;
         assignedPerPeriod.value = nextAssignedPerPeriod;
         roomsData.value = nextRoomsData;
+        syncUnscheduledBucketsForAllPeriods();
 
         alert(`Afegides ${addedSubjects} assignatures (actualitzades ${updatedSubjects}). Nous períodes: ${addedPeriods}.`);
       } catch (err) {
@@ -417,9 +462,13 @@ function handleImportExcelCalendar(data: ImportedCalendarData) {
     subjects.value = data.subjects;
   }
 
+  unscheduledBucketByPeriod.value = {};
+
   if (data.periods.length > 0) {
     activePid.value = data.periods[0].id;
   }
+
+  syncUnscheduledBucketsForAllPeriods();
 }
 
 function getCurrentDocumentJson() {
@@ -458,6 +507,9 @@ async function performLoadSupabaseCalendar(id: string) {
   roomsData.value = snapshot.roomsData;
   allowedPeriodsBySubject.value = snapshot.allowedPeriodsBySubject;
   hiddenSubjectIds.value = snapshot.hiddenSubjectIds;
+  unscheduledBucketByPeriod.value = snapshot.unscheduledBucketByPeriod ?? {};
+
+  syncUnscheduledBucketsForAllPeriods();
 
   selectedCalendarId.value = saved.id;
   refreshBaselineFromCurrent();
@@ -710,6 +762,8 @@ async function handleApplySupabaseTemplateToCurrentCalendar() {
     roomsData.value = nextSnapshot.roomsData;
     allowedPeriodsBySubject.value = nextSnapshot.allowedPeriodsBySubject;
     hiddenSubjectIds.value = nextSnapshot.hiddenSubjectIds;
+    unscheduledBucketByPeriod.value = nextSnapshot.unscheduledBucketByPeriod ?? {};
+    syncUnscheduledBucketsForAllPeriods();
 
     alert(
       `S'ha aplicat la plantilla del calendari: ${templateSaved.name}`
@@ -820,12 +874,14 @@ function handleExplainTemplateUse() {
     <div class="flex-1 flex overflow-hidden">
       <!-- Left Column: Subjects Tray -->
       <div class="w-1/3 border-r bg-gray-50 overflow-y-auto p-6">
-        <SubjectsTray
-          :availableSubjects="availableSubjects"
-          :subjects="subjects"
-          :hiddenSubjectIds="hiddenSubjectIds"
-          @update:hiddenSubjectIds="(val) => (hiddenSubjectIds = val)"
-        />
+<SubjectsTray
+  :pendingSubjects="pendingSubjects"
+  :noExamSubjects="noExamSubjects"
+  :clipboardSubjects="clipboardSubjects"
+  :subjects="subjects"
+  :hiddenSubjectIds="hiddenSubjectIds"
+  @update:hiddenSubjectIds="(val) => (hiddenSubjectIds = val)"
+/>
       </div>
 
       <!-- Right Column: Calendar -->
