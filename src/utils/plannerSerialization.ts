@@ -20,6 +20,7 @@ export function buildPlannerDocumentFromSnapshot(
     roomsData: snapshot.roomsData,
     allowedPeriodsBySubject: snapshot.allowedPeriodsBySubject,
     hiddenSubjectIds: snapshot.hiddenSubjectIds,
+    unscheduledBucketByPeriod: snapshot.unscheduledBucketByPeriod,
   };
 }
 
@@ -41,5 +42,6 @@ export function buildSnapshotFromPlannerDocument(
     hiddenSubjectIds: Array.isArray(document.hiddenSubjectIds)
       ? document.hiddenSubjectIds
       : [],
+    unscheduledBucketByPeriod: document.unscheduledBucketByPeriod ?? {},
   };
 }
