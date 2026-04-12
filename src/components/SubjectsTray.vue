@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { VueDraggable } from 'vue-draggable-plus';
-import type { Subject } from "../types/examPlanner";
+import type { Subject, UnscheduledBucket } from "../types/examPlanner";
 import TrayChip from "./TrayChip.vue";
 
 const props = defineProps<{
@@ -13,22 +13,26 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'update:hiddenSubjectIds', val: string[]): void
+  (e: 'update:hiddenSubjectIds', val: string[]): void;
+  (e: 'subject-added-to-bucket', payload: {
+    subjectId: string;
+    bucket: UnscheduledBucket;
+  }): void;
 }>();
 
 const pendingList = computed({
   get: () => props.pendingSubjects,
-  set: () => { /* No-op */ }
+  set: () => { /* controlat des de fora */ }
 });
 
 const noExamList = computed({
   get: () => props.noExamSubjects,
-  set: () => { /* No-op */ }
+  set: () => { /* controlat des de fora */ }
 });
 
 const clipboardList = computed({
   get: () => props.clipboardSubjects,
-  set: () => { /* No-op */ }
+  set: () => { /* controlat des de fora */ }
 });
 
 function restore(id: string) {
@@ -47,6 +51,39 @@ function labelForHidden(id: string) {
   const s = props.subjects.find(x => x.id === id);
   return s ? (s.sigles || s.codi) : id;
 }
+
+function resolveSubjectIdFromBucketEvent(evt: any, list: Subject[]): string | null {
+  const newIndex = evt?.newIndex;
+
+  if (typeof newIndex === "number" && list[newIndex]?.id) {
+    return list[newIndex].id;
+  }
+
+  const oldIndex = evt?.oldIndex;
+  if (typeof oldIndex === "number" && list[oldIndex]?.id) {
+    return list[oldIndex].id;
+  }
+
+  return null;
+}
+
+function onAddToPending(evt: any) {
+  const subjectId = resolveSubjectIdFromBucketEvent(evt, pendingList.value);
+  if (!subjectId) return;
+  emit("subject-added-to-bucket", { subjectId, bucket: "pending" });
+}
+
+function onAddToNoExam(evt: any) {
+  const subjectId = resolveSubjectIdFromBucketEvent(evt, noExamList.value);
+  if (!subjectId) return;
+  emit("subject-added-to-bucket", { subjectId, bucket: "no_exam" });
+}
+
+function onAddToClipboard(evt: any) {
+  const subjectId = resolveSubjectIdFromBucketEvent(evt, clipboardList.value);
+  if (!subjectId) return;
+  emit("subject-added-to-bucket", { subjectId, bucket: "clipboard" });
+}
 </script>
 
 <template>
@@ -60,10 +97,11 @@ function labelForHidden(id: string) {
 
       <VueDraggable
         v-model="pendingList"
-        :group="{ name: 'subjects', pull: 'clone', put: true }"
+        :group="{ name: 'subjects', pull: true, put: true }"
         :clone="clone"
         :sort="false"
         class="flex flex-wrap gap-2 min-h-[50px]"
+        @add="onAddToPending"
       >
         <TrayChip
           v-for="s in pendingList"
@@ -86,10 +124,11 @@ function labelForHidden(id: string) {
 
       <VueDraggable
         v-model="noExamList"
-        :group="{ name: 'subjects', pull: 'clone', put: true }"
+        :group="{ name: 'subjects', pull: true, put: true }"
         :clone="clone"
         :sort="false"
         class="flex flex-wrap gap-2 min-h-[50px]"
+        @add="onAddToNoExam"
       >
         <TrayChip
           v-for="s in noExamList"
@@ -112,10 +151,11 @@ function labelForHidden(id: string) {
 
       <VueDraggable
         v-model="clipboardList"
-        :group="{ name: 'subjects', pull: 'clone', put: true }"
+        :group="{ name: 'subjects', pull: true, put: true }"
         :clone="clone"
         :sort="false"
         class="flex flex-wrap gap-2 min-h-[50px]"
+        @add="onAddToClipboard"
       >
         <TrayChip
           v-for="s in clipboardList"
