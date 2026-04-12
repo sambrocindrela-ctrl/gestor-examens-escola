@@ -15,6 +15,8 @@ import type {
   AssignedMap,
   RoomsMapPerCell,
   ExamPlannerSnapshot,
+  UnscheduledBucket,
+  UnscheduledBucketByPeriod,
 } from "../types/examPlanner";
 
 import {
@@ -76,6 +78,9 @@ export function useExamPlannerState() {
   /* Ocultes */
   const hiddenSubjectIds = ref<string[]>([]);
 
+  /* Bucket de les assignatures no programades per període */
+  const unscheduledBucketByPeriod = ref<UnscheduledBucketByPeriod>({});
+
   /* --- Estat per Desfer --- */
   type DeletedSnapshot = {
     subject: Subject;
@@ -109,6 +114,7 @@ export function useExamPlannerState() {
       roomsData: roomsData.value,
       allowedPeriodsBySubject: allowedPeriodsBySubject.value,
       hiddenSubjectIds: hiddenSubjectIds.value,
+      unscheduledBucketByPeriod: unscheduledBucketByPeriod.value,
     };
   }
 
@@ -121,7 +127,59 @@ export function useExamPlannerState() {
     roomsData.value = snapshot.roomsData ?? {};
     allowedPeriodsBySubject.value = snapshot.allowedPeriodsBySubject ?? {};
     hiddenSubjectIds.value = snapshot.hiddenSubjectIds ?? [];
+    unscheduledBucketByPeriod.value = snapshot.unscheduledBucketByPeriod ?? {};
   }
+
+    function ensurePeriodBucketMap(pid: number) {
+    if (!unscheduledBucketByPeriod.value[pid]) {
+      unscheduledBucketByPeriod.value[pid] = {};
+    }
+  }
+
+  function getSubjectBucket(
+    pid: number,
+    subjectId: string
+  ): UnscheduledBucket | null {
+    return unscheduledBucketByPeriod.value[pid]?.[subjectId] ?? null;
+  }
+
+  function setSubjectBucket(
+    pid: number,
+    subjectId: string,
+    bucket: UnscheduledBucket
+  ) {
+    ensurePeriodBucketMap(pid);
+    unscheduledBucketByPeriod.value[pid][subjectId] = bucket;
+  }
+
+  function clearSubjectBucket(pid: number, subjectId: string) {
+    if (!unscheduledBucketByPeriod.value[pid]) return;
+    delete unscheduledBucketByPeriod.value[pid][subjectId];
+  }
+
+  function initializeSubjectAsPending(pid: number, subjectId: string) {
+    const alreadyHasBucket = getSubjectBucket(pid, subjectId);
+    if (alreadyHasBucket) return;
+    setSubjectBucket(pid, subjectId, "pending");
+  }
+
+  function getSubjectsInBucket(pid: number, bucket: UnscheduledBucket): Subject[] {
+    const bucketMap = unscheduledBucketByPeriod.value[pid] ?? {};
+    return subjects.value.filter((s) => bucketMap[s.id] === bucket);
+  }
+
+  const pendingSubjects = computed(() =>
+    getSubjectsInBucket(activePid.value, "pending")
+  );
+
+  const noExamSubjects = computed(() =>
+    getSubjectsInBucket(activePid.value, "no_exam")
+  );
+
+  const clipboardSubjects = computed(() =>
+    getSubjectsInBucket(activePid.value, "clipboard")
+  );
+
 
   /* --- Actions --- */
   function addPeriod() {
@@ -146,6 +204,7 @@ export function useExamPlannerState() {
 
     periods.value.push(newPeriod);
     slotsPerPeriod.value[newId] = [{ start: "08:00", end: "10:00" }];
+    unscheduledBucketByPeriod.value[newId] = {};
     activePid.value = newId;
   }
 
@@ -165,6 +224,11 @@ export function useExamPlannerState() {
     const rdCopy = { ...roomsData.value };
     delete rdCopy[id];
     roomsData.value = rdCopy;
+
+    const ubCopy = { ...unscheduledBucketByPeriod.value };
+    delete ubCopy[id];
+    unscheduledBucketByPeriod.value = ubCopy;
+
 
     if (activePid.value === id) {
       activePid.value = periods.value[0]?.id ?? 1;
@@ -233,6 +297,17 @@ export function useExamPlannerState() {
     allowedPeriodsBySubject.value = allowedCopy;
 
     hiddenSubjectIds.value = hiddenSubjectIds.value.filter((id) => id !== subjectId);
+
+    const unscheduledCopy: UnscheduledBucketByPeriod = {};
+
+    for (const [pidStr, bucketMap] of Object.entries(unscheduledBucketByPeriod.value)) {
+      const pid = Number(pidStr);
+      const nextMap = { ...bucketMap };
+      delete nextMap[subjectId];
+      unscheduledCopy[pid] = nextMap;
+    }
+
+    unscheduledBucketByPeriod.value = unscheduledCopy;
 
     // Clean assigned
     const assignedCopy: AssignedPerPeriod = {};
@@ -374,10 +449,21 @@ export function useExamPlannerState() {
     roomsData,
     allowedPeriodsBySubject,
     hiddenSubjectIds,
+    unscheduledBucketByPeriod,
     lastDeleted,
+
+    pendingSubjects,
+    noExamSubjects,
+    clipboardSubjects,
 
     getSnapshot,
     applySnapshot,
+
+    getSubjectBucket,
+    setSubjectBucket,
+    clearSubjectBucket,
+    initializeSubjectAsPending,
+    getSubjectsInBucket,
 
     addPeriod,
     removePeriod,
