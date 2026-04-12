@@ -85,6 +85,7 @@ export function buildNextYearCalendarFromTemplate(
     roomsData: {},
     allowedPeriodsBySubject: nextBase.allowedPeriodsBySubject,
     hiddenSubjectIds: nextBase.hiddenSubjectIds,
+    unscheduledBucketByPeriod: {},
   };
 
   const prevPeriodsOrdered = orderedPeriods(previous.periods);
