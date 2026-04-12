@@ -262,6 +262,21 @@ function handleUpdateCellList(pid: number, dateIso: string, slotIndex: number, n
   };
 }
 
+function handleSubjectAddedToBucket(payload: {
+  subjectId: string;
+  bucket: "pending" | "no_exam" | "clipboard";
+}) {
+  const pid = activePid.value;
+
+  removeSubjectFromAllCellsOfPeriod(pid, payload.subjectId);
+  setSubjectBucket(pid, payload.subjectId, payload.bucket);
+}
+
+function handleHiddenSubjectsChange(val: string[]) {
+  hiddenSubjectIds.value = val;
+  syncUnscheduledBucketsForAllPeriods();
+}  
+
 /* --- Import/Export Wrappers --- */
 
 const handleExportJSON = () =>
@@ -915,7 +930,8 @@ function handleExplainTemplateUse() {
   :clipboardSubjects="clipboardSubjects"
   :subjects="subjects"
   :hiddenSubjectIds="hiddenSubjectIds"
-  @update:hiddenSubjectIds="(val) => (hiddenSubjectIds = val)"
+  @update:hiddenSubjectIds="handleHiddenSubjectsChange"
+  @subject-added-to-bucket="handleSubjectAddedToBucket"
 />
       </div>
 
