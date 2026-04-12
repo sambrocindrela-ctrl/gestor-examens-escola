@@ -46,8 +46,9 @@ function onRemove(subjectId: string) {
       :disabled="disabled"
       ghost-class="opacity-50"
     >
-      <div v-for="s in list" :key="s.id" class="relative group">
-        <!-- Capseta arrossegable entre cel·les -->
+      <div  v-for="s in list"  :key="s.id"  class="relative group"  :data-subject-id="s.id"
+    >
+
         <PlacedChip
           :s="s"
           :extra="extrasForSubjects?.[s.id]"
