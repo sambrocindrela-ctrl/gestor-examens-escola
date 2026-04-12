@@ -51,6 +51,8 @@ const {
   getSnapshot,
   
   initializeSubjectAsPending,
+  clearSubjectBucket,
+  setSubjectBucket,
 
   addPeriod,
   removePeriod,
