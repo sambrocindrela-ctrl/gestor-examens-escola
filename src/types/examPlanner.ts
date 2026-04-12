@@ -38,6 +38,15 @@ export type AssignedMap = Record<string, string[]>; // "YYYY-MM-DD|slotIndex" �
 export type AssignedPerPeriod = Record<number, AssignedMap>;
 export type SlotsPerPeriod = Record<number, TimeSlot[]>;
 
+export type UnscheduledBucket = "pending" | "no_exam" | "clipboard";
+
+/** subjectId → bucket, per període */
+export type UnscheduledBucketMap = Record<string, UnscheduledBucket>;
+
+/** pid → (subjectId → bucket) */
+export type UnscheduledBucketByPeriod = Record<number, UnscheduledBucketMap>;
+
+
 /** Informació d’aules i estudiants per cel·la i assignatura */
 export type RoomsEnroll = {
   rooms: string[];
@@ -64,6 +73,7 @@ export interface ExamPlannerSnapshot {
   roomsData: RoomsDataPerPeriod;
   allowedPeriodsBySubject: Record<string, number[]>;
   hiddenSubjectIds: string[];
+  unscheduledBucketByPeriod: UnscheduledBucketByPeriod;
 }
 
 /**
