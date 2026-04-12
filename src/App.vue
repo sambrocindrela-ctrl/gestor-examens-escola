@@ -213,18 +213,51 @@ function handleRemoveOneFromCell(pid: number, dateIso: string, slotIndex: number
   assignedPerPeriod.value = { ...assignedPerPeriod.value, [pid]: copy };
 }
 
+function removeSubjectFromAllCellsOfPeriod(pid: number, subjectId: string) {
+  const prevMap = assignedPerPeriod.value[pid] ?? {};
+  const nextMap: AssignedMap = {};
+
+  for (const [cell, ids] of Object.entries(prevMap)) {
+    const filtered = ids.filter((id) => id !== subjectId);
+    if (filtered.length) {
+      nextMap[cell] = filtered;
+    }
+  }
+
+  assignedPerPeriod.value = {
+    ...assignedPerPeriod.value,
+    [pid]: nextMap,
+  };
+}  
+
 function handleUpdateCellList(pid: number, dateIso: string, slotIndex: number, newList: Subject[]) {
   const key = cellKey(dateIso, slotIndex);
   const prevMap = assignedPerPeriod.value[pid] ?? {};
-  
-  const copy: AssignedMap = { ...prevMap };
-  if (newList.length) {
-    copy[key] = newList.map(s => s.id);
+  const prevIds = prevMap[key] ?? [];
+  const newIds = newList.map((s) => s.id);
+
+  const enteredIds = newIds.filter((id) => !prevIds.includes(id));
+
+  // Si han entrat assignatures a aquesta cel·la,
+  // les traiem d'altres cel·les del mateix període i dels buckets
+  for (const subjectId of enteredIds) {
+    removeSubjectFromAllCellsOfPeriod(pid, subjectId);
+    clearSubjectBucket(pid, subjectId);
+  }
+
+  const refreshedMap = assignedPerPeriod.value[pid] ?? {};
+  const copy: AssignedMap = { ...refreshedMap };
+
+  if (newIds.length) {
+    copy[key] = newIds;
   } else {
     delete copy[key];
   }
-  
-  assignedPerPeriod.value = { ...assignedPerPeriod.value, [pid]: copy };
+
+  assignedPerPeriod.value = {
+    ...assignedPerPeriod.value,
+    [pid]: copy,
+  };
 }
 
 /* --- Import/Export Wrappers --- */
