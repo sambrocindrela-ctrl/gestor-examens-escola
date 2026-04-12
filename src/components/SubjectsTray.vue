@@ -52,35 +52,30 @@ function labelForHidden(id: string) {
   return s ? (s.sigles || s.codi) : id;
 }
 
-function resolveSubjectIdFromBucketEvent(evt: any, list: Subject[]): string | null {
-  const newIndex = evt?.newIndex;
+function resolveSubjectIdFromBucketEvent(evt: any): string | null {
+  const fromDataset = evt?.item?.dataset?.subjectId;
+  if (fromDataset) return fromDataset;
 
-  if (typeof newIndex === "number" && list[newIndex]?.id) {
-    return list[newIndex].id;
-  }
-
-  const oldIndex = evt?.oldIndex;
-  if (typeof oldIndex === "number" && list[oldIndex]?.id) {
-    return list[oldIndex].id;
-  }
+  const fromFirstChildDataset = evt?.item?.firstElementChild?.dataset?.subjectId;
+  if (fromFirstChildDataset) return fromFirstChildDataset;
 
   return null;
 }
 
 function onAddToPending(evt: any) {
-  const subjectId = resolveSubjectIdFromBucketEvent(evt, pendingList.value);
+  const subjectId = resolveSubjectIdFromBucketEvent(evt);
   if (!subjectId) return;
   emit("subject-added-to-bucket", { subjectId, bucket: "pending" });
 }
 
 function onAddToNoExam(evt: any) {
-  const subjectId = resolveSubjectIdFromBucketEvent(evt, noExamList.value);
+  const subjectId = resolveSubjectIdFromBucketEvent(evt);
   if (!subjectId) return;
   emit("subject-added-to-bucket", { subjectId, bucket: "no_exam" });
 }
 
 function onAddToClipboard(evt: any) {
-  const subjectId = resolveSubjectIdFromBucketEvent(evt, clipboardList.value);
+  const subjectId = resolveSubjectIdFromBucketEvent(evt);
   if (!subjectId) return;
   emit("subject-added-to-bucket", { subjectId, bucket: "clipboard" });
 }
