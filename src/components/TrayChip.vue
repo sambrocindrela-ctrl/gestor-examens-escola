@@ -1,16 +1,20 @@
 <script setup lang="ts">
 import type { Subject } from "../types/examPlanner";
+import { getSubjectLevelColor } from "../utils/levelColors";
 import MastersLines from "./MastersLines.vue";
 
-defineProps<{
+const props = defineProps<{
   s: Subject;
 }>();
+
+const levelBgColor = getSubjectLevelColor(props.s.nivell);
 </script>
 
 <template>
   <div
     :data-subject-id="s.id"
-    class="relative inline-flex flex-col px-3 py-2 rounded-2xl shadow-sm border text-sm select-none bg-white cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
+    class="relative inline-flex flex-col px-3 py-2 rounded-2xl shadow-sm border text-sm select-none cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
+    :style="{ backgroundColor: levelBgColor ?? '#FFFFFF' }"
     :title="`${s.sigles} · ${s.codi}`"
   >
     <span class="font-medium truncate">
