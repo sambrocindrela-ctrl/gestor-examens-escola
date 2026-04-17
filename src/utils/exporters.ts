@@ -304,21 +304,15 @@ function buildSubjectParagraphsForWord(
     new Paragraph({
       children: [
         new TextRun({
-          text: `${s.codi} · ${s.sigles}`,
+          text: s.nivell
+           ? `${s.nivell} · ${s.sigles} · ${s.codi}`
+           : `${s.sigles} · ${s.codi}`,
+
           bold: true,
         }),
       ],
     })
   );
-
-if (s.nivell) {
-  paras.push(
-    new Paragraph({
-      children: [new TextRun({ text: s.nivell })],
-    })
-  );
-}
-
 
   if (s.MATT) {
     paras.push(
