@@ -1,7 +1,4 @@
 // src/utils/exporters.ts
-function keepTogether(text: string) {
-  return text.split("").join("\u2060");
-}
 import * as XLSX from "xlsx-js-style";
 import {
   Document,
@@ -320,7 +317,7 @@ function buildSubjectParagraphsForWord(
   if (s.MATT) {
     paras.push(
       new Paragraph({
-        children: [new TextRun({ text: keepTogether(s.MATT), color: "0000FF",
+        children: [new TextRun({ text: s.MATT, color: "0000FF",
         }),
       ],
     })
@@ -330,7 +327,7 @@ function buildSubjectParagraphsForWord(
   if (s.MET) {
     paras.push(
       new Paragraph({
-        children: [new TextRun({ text: keepTogether(s.MET),
+        children: [new TextRun({ text: s.MET,
         }),
       ],
     })
@@ -340,7 +337,7 @@ function buildSubjectParagraphsForWord(
   if (s.MCYBERS) {
     paras.push(
       new Paragraph({
-        children: [new TextRun({ text: keepTogether(s.MCYBERS), color: "008000",
+        children: [new TextRun({ text: s.MCYBERS, color: "008000",
         }),
       ],
     })
@@ -350,7 +347,7 @@ function buildSubjectParagraphsForWord(
   if (s.MEE) {
     paras.push(
       new Paragraph({
-        children: [new TextRun({ text: keepTogether(s.MEE), color: "FF0000",
+        children: [new TextRun({ text: s.MEE, color: "FF0000",
         }),
       ],
     })
