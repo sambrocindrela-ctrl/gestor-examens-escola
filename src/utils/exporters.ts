@@ -31,6 +31,7 @@ import type {
   RoomsMapPerCell,
   RoomsEnroll,
 } from "../types/examPlanner";
+import { getPrioritySlotColor } from "./levelColors";
 
 /* Helpers de dates, iguals que al component */
 
@@ -195,11 +196,15 @@ export function exportPlannerCSV(args: {
 
 function formatSubjectForCell(s: Subject, extra?: RoomsEnroll): string {
   const lines: string[] = [];
+  
+if (s.nivell) {
+  lines.push(`${s.nivell} · ${s.sigles} · ${s.codi}`);
+} else {
+  lines.push(`${s.sigles} · ${s.codi}`);
+}
 
-  lines.push(`${s.codi} · ${s.sigles}`);
 
   const extraLines: string[] = [];
-  if (s.nivell) extraLines.push(s.nivell);
   if (s.MET) extraLines.push(s.MET);
   if (s.MATT) extraLines.push(s.MATT);
   if (s.MEE) extraLines.push(s.MEE);
@@ -268,6 +273,27 @@ function getSlotColor(slotStart: string, isDisabled: boolean = false): string {
   return "FFFFFF";
 }
 
+function getFinalCellColor(args: {
+ slotStart: string;
+ isDisabled?: boolean;
+ subjectsInCell?: Subject[];
+}): string {
+ const { slotStart, isDisabled = false, subjectsInCell = [] } = args;
+
+ if (isDisabled) {
+   return getSlotColor(slotStart, true);
+ }
+
+ const levels = subjectsInCell.map((s) => s.nivell);
+ const levelColor = getPrioritySlotColor(levels);
+
+ if (levelColor) {
+   return levelColor.replace("#", "");
+ }
+
+ return getSlotColor(slotStart, false);
+}
+
 function buildSubjectParagraphsForWord(
   s: Subject,
   extra?: RoomsEnroll
@@ -285,13 +311,14 @@ function buildSubjectParagraphsForWord(
     })
   );
 
-  if (s.nivell) {
-    paras.push(
-      new Paragraph({
-        children: [new TextRun({ text: `Nivell: ${s.nivell}` })],
-      })
-    );
-  }
+if (s.nivell) {
+  paras.push(
+    new Paragraph({
+      children: [new TextRun({ text: s.nivell })],
+    })
+  );
+}
+
 
   if (s.MATT) {
     paras.push(
@@ -573,12 +600,27 @@ export function exportPlannerExcel(args: {
           if (!cell) (ws as any)[addr] = cellObj;
 
           // Determine if this day is disabled
-          const di = c - 1; // column index to day index (0-4)
+          const di = c - 1;
           const day = addDays(rowWeekStart, di);
           const isDisabled = isDisabledDay(day, p);
 
-          // Get color based on slot start time
-          const color = getSlotColor(slot.start, isDisabled);
+         let subjectsInCell: Subject[] = [];
+
+        if (!isDisabled) {
+        const dateIso = format(day, "yyyy-MM-dd");
+        const key = `${dateIso}|${si}`;
+        const ids = amap[key] ?? [];
+        subjectsInCell = ids
+       .map((id) => subjects.find((s) => s.id === id))
+       .filter(Boolean) as Subject[];
+      }
+
+        const color = getFinalCellColor({
+        slotStart: slot.start,
+        isDisabled,
+        subjectsInCell,
+      });
+
 
           const existing = cellObj.s ?? {};
           cellObj.s = {
@@ -783,8 +825,13 @@ export async function exportPlannerWord(args: {
               cellParas.push(new Paragraph({ text: "" }));
             }
 
-            // Get color based on slot start time
-            const color = getSlotColor(slot.start, false);
+            // Determine final cell color based on disabled day, levels in the cell, or slot time
+            const color = getFinalCellColor({
+ slotStart: slot.start,
+ isDisabled: false,
+ subjectsInCell: list,
+});
+
 
             rowCells.push(
               new TableCell({
