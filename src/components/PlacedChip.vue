@@ -24,13 +24,15 @@ const levelBgColor = getSubjectLevelColor(props.s.nivell);
     title="Arrossega per moure a una altra franja"
   >
     <div class="text-sm font-semibold leading-tight">
-      {{ s.sigles }} · {{ s.codi }}
+      <template v-if="s.nivell">
+        {{ s.nivell }} · {{ s.sigles }} · {{ s.codi }}
+      </template>
+      <template v-else>
+        {{ s.sigles }} · {{ s.codi }}
+      </template>
     </div>
 
-    <div v-if="s.nivell" class="text-xs opacity-80">
-      Nivell: {{ s.nivell }}
-    </div>
-    <MastersLines v-else :s="s" />
+    <MastersLines v-if="!s.nivell" :s="s" />
 
     <div v-if="hasRooms || hasStud" class="mt-1 space-y-0.5 text-xs">
       <div v-if="hasRooms">
