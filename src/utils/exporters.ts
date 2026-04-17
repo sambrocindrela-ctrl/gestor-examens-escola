@@ -317,34 +317,46 @@ function buildSubjectParagraphsForWord(
   if (s.MATT) {
     paras.push(
       new Paragraph({
-        children: [new TextRun({ text: s.MATT, color: "0000FF" })],
-      })
-    );
-  }
+        children: [new TextRun({ text: s.MATT, color: "0000FF",
+          noBreak: true,
+        }),
+      ],
+    })
+  );
+}
 
   if (s.MET) {
     paras.push(
       new Paragraph({
-        children: [new TextRun({ text: s.MET })],
-      })
-    );
-  }
+        children: [new TextRun({ text: s.MET,
+          noBreak: true,
+        }),
+      ],
+    })
+  );
+}
 
   if (s.MCYBERS) {
     paras.push(
       new Paragraph({
-        children: [new TextRun({ text: s.MCYBERS, color: "008000" })],
-      })
-    );
-  }
+        children: [new TextRun({ text: s.MCYBERS, color: "008000",
+          noBreak: true,
+        }),
+      ],
+    })
+  );
+}
 
   if (s.MEE) {
     paras.push(
       new Paragraph({
-        children: [new TextRun({ text: s.MEE, color: "FF0000" })],
-      })
-    );
-  }
+        children: [new TextRun({ text: s.MEE, color: "FF0000",
+          noBreak: true,
+        }),
+      ],
+    })
+  );
+}
 
   if (extra?.rooms && extra.rooms.length > 0) {
     paras.push(
