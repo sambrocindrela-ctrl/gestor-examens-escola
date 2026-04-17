@@ -33,6 +33,19 @@ import type {
 } from "../types/examPlanner";
 import { getPrioritySlotColor } from "./levelColors";
 
+function protectToken(text: string) {
+  return text
+    .replace(/-/g, "\u2011")
+    .replace(/\//g, "\u2060/\u2060");
+}
+
+function keepCommaSeparatedItems(text: string) {
+  return text
+    .split(",")
+    .map((part) => protectToken(part.trim()))
+    .join(", ");
+}
+
 /* Helpers de dates, iguals que al component */
 
 function mondayOfWeek(d: Date) {
@@ -315,45 +328,56 @@ function buildSubjectParagraphsForWord(
   );
 
   if (s.MATT) {
-    paras.push(
-      new Paragraph({
-        children: [new TextRun({ text: s.MATT, color: "0000FF",
+  paras.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: keepCommaSeparatedItems(s.MATT),
+          color: "0000FF",
         }),
       ],
     })
   );
 }
 
-  if (s.MET) {
-    paras.push(
-      new Paragraph({
-        children: [new TextRun({ text: s.MET,
+if (s.MET) {
+  paras.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: keepCommaSeparatedItems(s.MET),
         }),
       ],
     })
   );
 }
 
-  if (s.MCYBERS) {
-    paras.push(
-      new Paragraph({
-        children: [new TextRun({ text: s.MCYBERS, color: "008000",
+if (s.MCYBERS) {
+  paras.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: keepCommaSeparatedItems(s.MCYBERS),
+          color: "008000",
         }),
       ],
     })
   );
 }
 
-  if (s.MEE) {
-    paras.push(
-      new Paragraph({
-        children: [new TextRun({ text: s.MEE, color: "FF0000",
+if (s.MEE) {
+  paras.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: keepCommaSeparatedItems(s.MEE),
+          color: "FF0000",
         }),
       ],
     })
   );
 }
-
+  
   if (extra?.rooms && extra.rooms.length > 0) {
     paras.push(
       new Paragraph({
