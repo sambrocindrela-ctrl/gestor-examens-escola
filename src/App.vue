@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted } from "vue";
+import { computed, ref, onMounted, nextTick } from "vue";
 import * as Papa from "papaparse";
 
 import { useExamPlannerState } from "./composables/useExamPlannerState";
@@ -71,6 +71,7 @@ const isAdminMode = ref(false);
 const savedCalendars = ref<CalendarSummary[]>([]);
 const selectedCalendarId = ref("");
 const selectedTitulacio = ref("");
+const calendarRenderKey = ref(0);
 const TITULACIONS = [
   "GEF",
   "GREELEC",
@@ -561,6 +562,9 @@ async function performLoadSupabaseCalendar(id: string) {
 
   syncUnscheduledBucketsForAllPeriods();
 
+  await nextTick();
+  calendarRenderKey.value++;
+
   selectedCalendarId.value = saved.id;
   refreshBaselineFromCurrent();
 
@@ -925,6 +929,7 @@ function handleExplainTemplateUse() {
       <!-- Left Column: Subjects Tray -->
       <div class="w-1/3 border-r bg-gray-50 overflow-y-auto p-6">
 <SubjectsTray
+  :key="`tray-${calendarRenderKey}`"
   :pendingSubjects="pendingSubjects"
   :noExamSubjects="noExamSubjects"
   :clipboardSubjects="clipboardSubjects"
@@ -937,17 +942,18 @@ function handleExplainTemplateUse() {
 
       <!-- Right Column: Calendar -->
       <div class="flex-1 overflow-y-auto p-6 bg-white">
-        <ExamCalendarGrid
-          v-if="activePeriod"
-          :activePeriod="activePeriod"
-          :activePid="activePid"
-          :slotsPerPeriod="slotsPerPeriod"
-          :assignedPerPeriod="assignedPerPeriod"
-          :subjects="subjects"
-          :roomsData="roomsData"
-          @remove-one-from-cell="handleRemoveOneFromCell"
-          @update-cell-list="handleUpdateCellList"
-        />
+<ExamCalendarGrid
+  v-if="activePeriod"
+  :key="`grid-${calendarRenderKey}-${activePid}`"
+  :activePeriod="activePeriod"
+  :activePid="activePid"
+  :slotsPerPeriod="slotsPerPeriod"
+  :assignedPerPeriod="assignedPerPeriod"
+  :subjects="subjects"
+  :roomsData="roomsData"
+  @remove-one-from-cell="handleRemoveOneFromCell"
+  @update-cell-list="handleUpdateCellList"
+/>
       </div>
     </div>
 
